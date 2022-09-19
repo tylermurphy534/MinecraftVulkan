@@ -76,8 +76,9 @@ void XeRenderSystem::createPipelineLayout(XeDescriptorSetLayout &xeDescriptorSet
     pipelineLayoutInfo.pPushConstantRanges = nullptr;
   }
 
+  std::vector<VkDescriptorSetLayout> descriptorSetLayouts{xeDescriptorSetLayout.getDescriptorSetLayout()};
+
   if (uniformBufferDataSize > 0) {
-    std::vector<VkDescriptorSetLayout> descriptorSetLayouts{xeDescriptorSetLayout.getDescriptorSetLayout()};
     pipelineLayoutInfo.setLayoutCount = static_cast<uint32_t>(descriptorSetLayouts.size());
     pipelineLayoutInfo.pSetLayouts = descriptorSetLayouts.data();
   } else {
@@ -115,13 +116,13 @@ void XeRenderSystem::renderGameObjects(
   uint32_t pushConstantSize, 
   void* uniformBufferData, 
   uint32_t uniformBufferSize) {
-  
+
   uboBuffers[frameIndex]->writeToBuffer(uniformBufferData);
   uboBuffers[frameIndex]->flush();
-  
+
   xePipeline->bind(commandBuffer);
 
-  if(pushConstantData == NULL) {
+  if(pushConstantSize > 0) {
     vkCmdBindDescriptorSets(
         commandBuffer,
         VK_PIPELINE_BIND_POINT_GRAPHICS,
@@ -135,14 +136,21 @@ void XeRenderSystem::renderGameObjects(
   
   for (auto& obj: gameObjects) {
 
-    if(pushConstantData == NULL) {
+    struct PushConstant {
+      glm::mat4 modelMatrix; 
+      glm::mat4 normalMatrix;
+    };
+
+    PushConstant pc = PushConstant{obj.transform.mat4(), obj.transform.normalMatrix()};
+
+    if(pushConstantSize > 0) {
       vkCmdPushConstants(
         commandBuffer, 
         pipelineLayout, 
         VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 
         0, 
         pushConstantSize,
-        &pushConstantData);
+        &pc);
     }
 
     obj.model->bind(commandBuffer);
