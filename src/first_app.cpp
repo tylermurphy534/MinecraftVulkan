@@ -32,30 +32,7 @@ FirstApp::~FirstApp() {}
 
 void FirstApp::run() {
 
-  std::vector<std::unique_ptr<XeBuffer>> uboBuffers(XeSwapChain::MAX_FRAMES_IN_FLIGHT);
-  for (int i = 0; i < uboBuffers.size(); i++) {
-    uboBuffers[i] = std::make_unique<XeBuffer>(
-      xeDevice,
-      sizeof(GlobalUbo),
-      XeSwapChain::MAX_FRAMES_IN_FLIGHT,
-      VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-      VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
-    uboBuffers[i]->map();
-  }
-
-  auto globalSetLayout = XeDescriptorSetLayout::Builder(xeDevice)
-    .addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
-    .build();
-
-  std::vector<VkDescriptorSet> globalDescriptorSets(XeSwapChain::MAX_FRAMES_IN_FLIGHT);
-  for (int i = 0; i < globalDescriptorSets.size(); i++) {
-    auto bufferInfo = uboBuffers[i]->descriptorInfo();
-    XeDescriptorWriter(*globalSetLayout, *globalPool)
-      .writeBuffer(0, &bufferInfo)
-      .build(globalDescriptorSets[i]);
-  }
-
-  SimpleRenderSystem simpleRenderSystem{xeDevice, xeRenderer.getSwapChainRenderPass(), globalSetLayout->getDescriptorSetLayout()};
+  std::unique_ptr<XeRenderSystem> renderSystem = xeEngine.createRenderSystem("fw","fd",0,0);
   XeCamera camera{};
   camera.setViewTarget(glm::vec3(-1.f, -2.f, 20.f), glm::vec3(0.f, 0.f, 2.5f));
 
@@ -64,14 +41,14 @@ void FirstApp::run() {
 
   auto currentTime = std::chrono::high_resolution_clock::now();
 
-  while (!xeWindow.shouldClose()) {
+  while (!xeEngine.getWindow().shouldClose()) {
     glfwPollEvents();
 
     auto newTime = std::chrono::high_resolution_clock::now();
     float frameTime = std::chrono::duration<float, std::chrono::seconds::period>(newTime - currentTime).count();
     currentTime = newTime;
 
-    cameraController.moveInPlaneXZ(xeWindow.getGLFWwindow(), frameTime, viewerObject);
+    cameraController.moveInPlaneXZ(xeEngine.getWindow().getGLFWwindow(), frameTime, viewerObject);
     camera.setViewYXZ(viewerObject.transform.translation, viewerObject.transform.rotation);
 
     float aspect = xeRenderer.getAspectRatio();
@@ -80,25 +57,18 @@ void FirstApp::run() {
     if(auto commandBuffer = xeRenderer.beginFrame()) {
 
       int frameIndex = xeRenderer.getFrameIndex();
-      XeFrameInfo frameInfo{
-        frameIndex,
-        frameTime,
-        commandBuffer,
-        camera,
-        globalDescriptorSets[frameIndex]
-      };
       
       // update
       GlobalUbo ubo{};
       ubo.projectionView = camera.getProjection() * camera.getView();
-      uboBuffers[frameIndex]->writeToBuffer(&ubo);
-      uboBuffers[frameIndex]->flush();
+      // uboBuffers[frameIndex]->writeToBuffer(&ubo);
+      // uboBuffers[frameIndex]->flush();
 
-      // render
-      xeRenderer.beginSwapChainRenderPass(commandBuffer);
-      simpleRenderSystem.renderGameObjects(frameInfo, gameObjects);
-      xeRenderer.endSwapChainRenderPass(commandBuffer);
-      xeRenderer.endFrame();
+      // // render
+      // xeRenderer.beginSwapChainRenderPass(commandBuffer);
+      // simpleRenderSystem.renderGameObjects(frameInfo, gameObjects);
+      // xeRenderer.endSwapChainRenderPass(commandBuffer);
+      // xeRenderer.endFrame();
     }
 
   }

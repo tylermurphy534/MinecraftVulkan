@@ -3,6 +3,8 @@
 #include "xe_window.hpp"
 #include "xe_device.hpp"
 #include "xe_renderer.hpp"
+#include "xe_render_system.hpp"
+#include "xe_descriptors.hpp"
 
 namespace xe {
 
@@ -16,25 +18,26 @@ class XeEngine {
     XeEngine(const XeEngine&) = delete;
     XeEngine operator=(const XeEngine&) = delete;
 
-    const XeWindow& getWindow() const { 
+    XeWindow& getWindow() { 
       return xeWindow; 
     };
 
-    const XeRenderer& getRenderer() const { 
+    XeRenderer& getRenderer() { 
       return xeRenderer; 
     };
 
+    std::unique_ptr<XeRenderSystem> createRenderSystem(const std::string &vert, const std::string &frag, uint32_t pushCunstantDataSize, uint32_t uniformBufferDataSize);
 
   private:
 
-    void loadDescriptorPool();
+    void loadDescriptors();
 
     XeWindow xeWindow;
     XeDevice xeDevice;
     XeRenderer xeRenderer;
 
-    std::unique_ptr<XeDescriptorPool> xeDescriptorPool{};
-    std::unique_ptr<xe::XeDescriptorSetLayout> xeDescriptorSetLayout;
+    std::unique_ptr<XeDescriptorPool> xeDescriptorPool;
+    std::unique_ptr<XeDescriptorSetLayout> xeDescriptorSetLayout;
 };
 
 }

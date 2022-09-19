@@ -11,7 +11,6 @@ struct XeFrameInfo {
     float frameTime;
     VkCommandBuffer commandBuffer;
     XeCamera &camera;
-    VkDescriptorSet globalDescriptorSet;
 };
 
 }
