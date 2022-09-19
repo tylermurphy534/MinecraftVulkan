@@ -24,12 +24,7 @@ struct GlobalUbo {
   glm::vec3 lightDirection = glm::normalize(glm::vec3{-1.f, 3.f, 1.f});
 };
 
-FirstApp::FirstApp() {
-  globalPool = XeDescriptorPool::Builder(xeDevice)
-    .setMaxSets(XeSwapChain::MAX_FRAMES_IN_FLIGHT)
-    .addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, XeSwapChain::MAX_FRAMES_IN_FLIGHT)
-    .addPoolSize(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, XeSwapChain::MAX_FRAMES_IN_FLIGHT)
-    .build();
+FirstApp::FirstApp() : xeEngine{WIDTH, HEIGHT, "Hello, Vulkan!"} {
   loadGameObjects();
 }
 

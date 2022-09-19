@@ -1,8 +1,6 @@
 #pragma once
 
-#include "xe_renderer.hpp"
-#include "xe_window.hpp"
-#include "xe_device.hpp"
+#include "xe_engine.hpp"
 #include "xe_game_object.hpp"
 #include "xe_descriptors.hpp"
 
@@ -26,11 +24,8 @@ class FirstApp {
   private:
     void loadGameObjects();
 
-    XeWindow xeWindow{WIDTH, HEIGHT, "Hello Vulkan!"};
-    XeDevice xeDevice{xeWindow};
-    XeRenderer xeRenderer{xeWindow, xeDevice};
+    XeEngine xeEngine;
 
-    std::unique_ptr<XeDescriptorPool> globalPool{};
     std::vector<XeGameObject> gameObjects;
 };
 }
