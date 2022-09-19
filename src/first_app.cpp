@@ -3,7 +3,6 @@
 #include "xe_camera.hpp"
 #include "xe_game_object.hpp"
 #include "xe_model.hpp"
-#include "simple_render_system.hpp"
 #include "keyboard_movement_controller.hpp"
 
 
@@ -16,12 +15,17 @@
 #include <chrono> 
 #include <cassert>
 #include <stdexcept>
-
+#include <iostream>
 namespace xe {
 
-struct GlobalUbo {
-  glm::mat4 projectionView{1.f};
-  glm::vec3 lightDirection = glm::normalize(glm::vec3{-1.f, 3.f, 1.f});
+struct UniformBuffer {
+  alignas(16) glm::mat4 projectionView{1.f};
+  alignas(4) glm::vec3 lightDirection = glm::normalize(glm::vec3{-1.f, 3.f, 1.f});
+};
+
+struct PushConstant {
+  alignas(16) glm::mat4 modelMatrix{1.f};
+  alignas(16) glm::mat4 normalMatrix{1.f};
 };
 
 FirstApp::FirstApp() : xeEngine{WIDTH, HEIGHT, "Hello, Vulkan!"} {
@@ -32,7 +36,12 @@ FirstApp::~FirstApp() {}
 
 void FirstApp::run() {
 
-  std::unique_ptr<XeRenderSystem> renderSystem = xeEngine.createRenderSystem("fw","fd",0,0);
+  std::unique_ptr<XeRenderSystem> simpleRenderSystem = xeEngine.createRenderSystem(
+    "res/shaders/simple_shader.vert.spv",
+    "res/shaders/simple_shader.frag.spv", 
+    sizeof(PushConstant), 
+    sizeof(UniformBuffer));
+
   XeCamera camera{};
   camera.setViewTarget(glm::vec3(-1.f, -2.f, 20.f), glm::vec3(0.f, 0.f, 2.5f));
 
@@ -51,34 +60,38 @@ void FirstApp::run() {
     cameraController.moveInPlaneXZ(xeEngine.getWindow().getGLFWwindow(), frameTime, viewerObject);
     camera.setViewYXZ(viewerObject.transform.translation, viewerObject.transform.rotation);
 
-    float aspect = xeRenderer.getAspectRatio();
+    float aspect = xeEngine.getRenderer().getAspectRatio();
     camera.setPerspectiveProjection(glm::radians(50.f), aspect, 0.1f, 100.f);
 
-    if(auto commandBuffer = xeRenderer.beginFrame()) {
+    if(xeEngine.beginFrame()) {
 
-      int frameIndex = xeRenderer.getFrameIndex();
-      
-      // update
-      GlobalUbo ubo{};
+      PushConstant pc{};
+      pc.modelMatrix = gameObjects[0].transform.mat4();
+      pc.normalMatrix = gameObjects[0].transform.normalMatrix();
+
+      UniformBuffer ubo{};
       ubo.projectionView = camera.getProjection() * camera.getView();
-      // uboBuffers[frameIndex]->writeToBuffer(&ubo);
-      // uboBuffers[frameIndex]->flush();
+      
+      xeEngine.render(
+        *simpleRenderSystem,
+        gameObjects,
+        &pc,
+        sizeof(pc),
+        &ubo,
+        sizeof(ubo)
+      );
 
-      // // render
-      // xeRenderer.beginSwapChainRenderPass(commandBuffer);
-      // simpleRenderSystem.renderGameObjects(frameInfo, gameObjects);
-      // xeRenderer.endSwapChainRenderPass(commandBuffer);
-      // xeRenderer.endFrame();
+      xeEngine.endFrame();
+
     }
-
   }
 
-  vkDeviceWaitIdle(xeDevice.device());
+  xeEngine.close();
 
 }
 
 void FirstApp::loadGameObjects() {
-  std::shared_ptr<XeModel> xeModel = XeModel::createModelFromFile(xeDevice, "res/models/stanford-dragon.obj");
+  std::shared_ptr<XeModel> xeModel = xeEngine.createModel("res/models/stanford-dragon.obj");
 
   auto cube = XeGameObject::createGameObject();
   cube.model = xeModel;

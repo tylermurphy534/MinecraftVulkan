@@ -12,14 +12,15 @@
 #include <memory>
 #include <stdexcept>
 
+#include <iostream>
+
 namespace xe {
 
-template <typename P, typename U>
 XeRenderSystem::XeRenderSystem(
   XeDevice &device, 
   XeRenderer &renderer, 
-  std::unique_ptr<XeDescriptorPool> &xeDescriptorPool, 
-  std::unique_ptr<XeDescriptorSetLayout> &xeDescriptorSetLayout, 
+  XeDescriptorPool &xeDescriptorPool, 
+  XeDescriptorSetLayout &xeDescriptorSetLayout, 
   std::string vert,
   std::string frag, 
   uint32_t pushCunstantDataSize, 
@@ -31,12 +32,9 @@ XeRenderSystem::XeRenderSystem(
 }
 
 
-template <typename P, typename U>
 XeRenderSystem::~XeRenderSystem() {};
 
-
-template <typename P, typename U>
-void XeRenderSystem::createUniformBuffers(std::unique_ptr<XeDescriptorPool> &xeDescriptorPool, std::unique_ptr<XeDescriptorSetLayout> &xeDescriptorSetLayout, uint32_t uniformBufferDataSize) {
+void XeRenderSystem::createUniformBuffers(XeDescriptorPool &xeDescriptorPool, XeDescriptorSetLayout &xeDescriptorSetLayout, uint32_t uniformBufferDataSize) {
   if(uniformBufferDataSize == 0) return;
 
   uboBuffers = std::vector<std::unique_ptr<XeBuffer>>(XeSwapChain::MAX_FRAMES_IN_FLIGHT);
@@ -53,24 +51,24 @@ void XeRenderSystem::createUniformBuffers(std::unique_ptr<XeDescriptorPool> &xeD
   descriptorSets = std::vector<VkDescriptorSet>(XeSwapChain::MAX_FRAMES_IN_FLIGHT);
   for (int i = 0; i < descriptorSets.size(); i++) {
     auto bufferInfo = uboBuffers[i]->descriptorInfo();
-    XeDescriptorWriter(*xeDescriptorSetLayout, *xeDescriptorPool)
+    XeDescriptorWriter(xeDescriptorSetLayout, xeDescriptorPool)
       .writeBuffer(0, &bufferInfo)
       .build(descriptorSets[i]);
   }
 }
 
 
-template <typename P, typename U>
-void XeRenderSystem::createPipelineLayout(std::unique_ptr<XeDescriptorSetLayout> &xeDescriptorSetLayout, uint32_t pushCunstantDataSize, uint32_t uniformBufferDataSize) {
+void XeRenderSystem::createPipelineLayout(XeDescriptorSetLayout &xeDescriptorSetLayout, uint32_t pushCunstantDataSize, uint32_t uniformBufferDataSize) {
+
+  VkPushConstantRange pushConstantRange;
+  pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
+  pushConstantRange.offset = 0;
+  pushConstantRange.size = pushCunstantDataSize;
 
   VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
   pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
 
   if (pushCunstantDataSize > 0) {
-    VkPushConstantRange pushConstantRange;
-    pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
-    pushConstantRange.offset = 0;
-    pushConstantRange.size = pushCunstantDataSize;
     pipelineLayoutInfo.pushConstantRangeCount = 1;
     pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
   } else {
@@ -79,7 +77,7 @@ void XeRenderSystem::createPipelineLayout(std::unique_ptr<XeDescriptorSetLayout>
   }
 
   if (uniformBufferDataSize > 0) {
-    std::vector<VkDescriptorSetLayout> descriptorSetLayouts{xeDescriptorSetLayout->getDescriptorSetLayout()};
+    std::vector<VkDescriptorSetLayout> descriptorSetLayouts{xeDescriptorSetLayout.getDescriptorSetLayout()};
     pipelineLayoutInfo.setLayoutCount = static_cast<uint32_t>(descriptorSetLayouts.size());
     pipelineLayoutInfo.pSetLayouts = descriptorSetLayouts.data();
   } else {
@@ -90,10 +88,10 @@ void XeRenderSystem::createPipelineLayout(std::unique_ptr<XeDescriptorSetLayout>
   if(vkCreatePipelineLayout(xeDevice.device(), &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS) {
     std::runtime_error("failed to create pipeline layout!");
   }
+
 }
 
 
-template <typename P, typename U>
 void XeRenderSystem::createPipeline(VkRenderPass renderPass, std::string vert, std::string frag) {
   assert(pipelineLayout != nullptr && "Cannot create pipeline before pipeline layout");
 
@@ -109,35 +107,46 @@ void XeRenderSystem::createPipeline(VkRenderPass renderPass, std::string vert, s
   );
 }
 
+void XeRenderSystem::renderGameObjects(
+  int frameIndex, 
+  VkCommandBuffer commandBuffer, 
+  std::vector<XeGameObject> &gameObjects, 
+  void *pushConstantData, 
+  uint32_t pushConstantSize, 
+  void* uniformBufferData, 
+  uint32_t uniformBufferSize) {
+  
+  uboBuffers[frameIndex]->writeToBuffer(uniformBufferData);
+  uboBuffers[frameIndex]->flush();
+  
+  xePipeline->bind(commandBuffer);
 
-template <typename P, typename U>
-void XeRenderSystem::renderGameObjects(XeFrameInfo &frameInfo, std::vector<XeGameObject> &gameObjects, XeRenderSystem::XeData pushConstantData) {
-  xePipeline->bind(frameInfo.commandBuffer);
-
-  if(uboBuffers.size() > 0) {
+  if(pushConstantData == NULL) {
     vkCmdBindDescriptorSets(
-        frameInfo.commandBuffer,
+        commandBuffer,
         VK_PIPELINE_BIND_POINT_GRAPHICS,
         pipelineLayout,
         0,
         1,
-        &descriptorSets[frameInfo.frameIndex],
+        &descriptorSets[frameIndex],
         0,
         nullptr);
   }
   
   for (auto& obj: gameObjects) {
 
-    vkCmdPushConstants(
-      frameInfo.commandBuffer, 
-      pipelineLayout, 
-      VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 
-      0, 
-      sizeof(pushConstantData),
-      &pushConstantData);
+    if(pushConstantData == NULL) {
+      vkCmdPushConstants(
+        commandBuffer, 
+        pipelineLayout, 
+        VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 
+        0, 
+        pushConstantSize,
+        &pushConstantData);
+    }
 
-    obj.model->bind(frameInfo.commandBuffer);
-    obj.model->draw(frameInfo.commandBuffer);
+    obj.model->bind(commandBuffer);
+    obj.model->draw(commandBuffer);
   }
 
 }

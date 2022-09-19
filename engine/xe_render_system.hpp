@@ -5,12 +5,13 @@
 #include "xe_pipeline.hpp"
 #include "xe_frame_info.hpp"
 #include "xe_game_object.hpp"
+#include "xe_descriptors.hpp"
+#include "xe_renderer.hpp"
 
 #include <memory>
 
 namespace xe {
 
-template<typename P, typename U>
 class XeRenderSystem {
   public:
 
@@ -19,23 +20,33 @@ class XeRenderSystem {
     XeRenderSystem(
       XeDevice &device, 
       XeRenderer &renderer, 
-      std::unique_ptr<XeDescriptorPool> &xeDescriptorPool, 
-      std::unique_ptr<XeDescriptorSetLayout> &xeDescriptorSetLayout,
+      XeDescriptorPool &xeDescriptorPool, 
+      XeDescriptorSetLayout &xeDescriptorSetLayout,
       std::string vert,
       std::string frag, 
-      uint32_t pushCunstantDataSize, 
-      uint32_t uniformBufferDataSize);
+      uint32_t pushCunstantDataSize,
+      uint32_t uniformBufferDataSize
+      );
 
     ~XeRenderSystem();
 
     XeRenderSystem(const XeRenderSystem &) = delete;
     XeRenderSystem operator=(const XeRenderSystem &) = delete;
 
-    void renderGameObjects(XeFrameInfo &frameInfo, std::vector<XeGameObject> &gameObjects, XeRenderSystem::XeData pushConstantData);
+    void setUnifroms(XeFrameInfo & frameInfo);
+
+    void renderGameObjects(
+      int frameIndex, 
+      VkCommandBuffer commandBuffer, 
+      std::vector<XeGameObject> &gameObjects, 
+      void *pushConstantData, 
+      uint32_t pushConstantSize, 
+      void* uniformBufferData, 
+      uint32_t uniformBufferSize);
 
   private:
-    void createUniformBuffers(std::unique_ptr<XeDescriptorPool> &xeDescriptorPool, std::unique_ptr<XeDescriptorSetLayout> &xeDescriptorSetLayout, uint32_t uniformBufferDataSize);
-    void createPipelineLayout(std::unique_ptr<XeDescriptorSetLayout> &xeDescriptorSetLayout, uint32_t pushCunstantDataSize, uint32_t uniformBufferDataSize);
+    void createUniformBuffers(XeDescriptorPool &xeDescriptorPool, XeDescriptorSetLayout &xeDescriptorSetLayout, uint32_t uniformBufferDataSize);
+    void createPipelineLayout(XeDescriptorSetLayout &xeDescriptorSetLayout, uint32_t pushCunstantDataSize, uint32_t uniformBufferDataSize);
     void createPipeline(VkRenderPass renderPass, std::string vert, std::string frag);
 
     XeDevice& xeDevice;

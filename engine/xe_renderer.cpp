@@ -17,7 +17,6 @@ namespace xe {
 XeRenderer::XeRenderer(XeWindow& window, XeDevice& device) : xeWindow{window}, xeDevice{device} {
   recreateSwapChain();
   createCommandBuffers();
-  loadDescriptorPool();
 }
 
 XeRenderer::~XeRenderer() { freeCommandBuffers(); }
