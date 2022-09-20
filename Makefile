@@ -1,12 +1,9 @@
-include .env
-
 CC = clang++
 
 INCFLAGS  = -Isrc
 INCFLAGS += -Iengine
 INCFLAGS += -Ilib/glfw/include
 INCFLAGS += -Ilib/glm
-INCFLAGS += -L${VULKAN_SDK}/lib -lvulkan
 
 CCFLAGS  = -std=c++17 -O2 -g
 CCFLAGS += $(INCFLAGS)
@@ -15,6 +12,7 @@ LDFLAGS = -lm
 LDFLAGS += $(INCFLAGS)
 LDFLAGS += lib/glfw/src/libglfw3.a
 LDFLAGS += lib/glm/glm/libglm_static.a
+LDFLAGS += -lvulkan
 
 SRC  = $(shell find src -name "*.cpp")
 SRC += $(shell find engine -name "*.cpp")

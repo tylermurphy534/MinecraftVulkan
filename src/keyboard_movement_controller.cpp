@@ -4,9 +4,9 @@
 #include <glm/geometric.hpp>
 #include <limits>
 
-namespace xe {
+namespace app {
 
-void KeyboardMovementController::moveInPlaneXZ(GLFWwindow* window, float dt, XeGameObject& gameObject) {
+void KeyboardMovementController::moveInPlaneXZ(GLFWwindow* window, float dt, xe::XeGameObject& gameObject) {
   glm::vec3 rotate{0};
   if(glfwGetKey(window, keys.lookRight) == GLFW_PRESS) rotate.y += 1.f;
   if(glfwGetKey(window, keys.lookLeft) == GLFW_PRESS) rotate.y -= 1.f;

@@ -3,11 +3,11 @@
 #include <vulkan/vulkan.h>
 #include "xe_device.hpp"
 #include "xe_pipeline.hpp"
-#include "xe_frame_info.hpp"
 #include "xe_game_object.hpp"
 #include "xe_swap_chain.hpp"
 #include "xe_renderer.hpp"
 #include "xe_descriptors.hpp"
+#include "xe_engine.hpp"
 
 #include <memory>
 #include <stdexcept>
@@ -17,18 +17,15 @@
 namespace xe {
 
 XeRenderSystem::XeRenderSystem(
-  XeDevice &device, 
-  XeRenderer &renderer, 
-  XeDescriptorPool &xeDescriptorPool, 
-  XeDescriptorSetLayout &xeDescriptorSetLayout, 
+  XeEngine &xeEngine,
   std::string vert,
   std::string frag, 
   uint32_t pushCunstantDataSize, 
   uint32_t uniformBufferDataSize) 
-  : xeDevice{device} {
-  createUniformBuffers(xeDescriptorPool, xeDescriptorSetLayout, uniformBufferDataSize);
-  createPipelineLayout(xeDescriptorSetLayout, pushCunstantDataSize, uniformBufferDataSize);
-  createPipeline(renderer.getSwapChainRenderPass(), vert, frag);
+  : xeDevice{xeEngine.xeDevice}, xeRenderer{xeEngine.xeRenderer} {
+  createUniformBuffers(*xeEngine.xeDescriptorPool, *xeEngine.xeDescriptorSetLayout, uniformBufferDataSize);
+  createPipelineLayout(*xeEngine.xeDescriptorSetLayout, pushCunstantDataSize, uniformBufferDataSize);
+  createPipeline(xeRenderer.getSwapChainRenderPass(), vert, frag);
 }
 
 
@@ -108,55 +105,54 @@ void XeRenderSystem::createPipeline(VkRenderPass renderPass, std::string vert, s
   );
 }
 
-void XeRenderSystem::renderGameObjects(
-  int frameIndex, 
-  VkCommandBuffer commandBuffer, 
-  std::vector<XeGameObject> &gameObjects, 
-  void *pushConstantData, 
-  uint32_t pushConstantSize, 
-  void* uniformBufferData, 
-  uint32_t uniformBufferSize) {
-
-  uboBuffers[frameIndex]->writeToBuffer(uniformBufferData);
-  uboBuffers[frameIndex]->flush();
-
-  xePipeline->bind(commandBuffer);
-
-  if(pushConstantSize > 0) {
+void XeRenderSystem::loadPushConstant(void *pushConstantData, uint32_t pushConstantSize) {
+  if(!boundPipeline) {
+    xeRenderer.beginSwapChainRenderPass(xeRenderer.getCurrentCommandBuffer());
+    xePipeline->bind(xeRenderer.getCurrentCommandBuffer());
+    boundPipeline = true;
+  }
+  if(!boundDescriptor) {
     vkCmdBindDescriptorSets(
-        commandBuffer,
+        xeRenderer.getCurrentCommandBuffer(),
         VK_PIPELINE_BIND_POINT_GRAPHICS,
         pipelineLayout,
         0,
         1,
-        &descriptorSets[frameIndex],
+        &descriptorSets[xeRenderer.getFrameIndex()],
         0,
         nullptr);
+    boundDescriptor = true;
   }
-  
-  for (auto& obj: gameObjects) {
-
-    struct PushConstant {
-      glm::mat4 modelMatrix; 
-      glm::mat4 normalMatrix;
-    };
-
-    PushConstant pc = PushConstant{obj.transform.mat4(), obj.transform.normalMatrix()};
-
-    if(pushConstantSize > 0) {
-      vkCmdPushConstants(
-        commandBuffer, 
+  vkCmdPushConstants(
+        xeRenderer.getCurrentCommandBuffer(), 
         pipelineLayout, 
         VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 
         0, 
         pushConstantSize,
-        &pc);
-    }
+        pushConstantData);
+}
 
-    obj.model->bind(commandBuffer);
-    obj.model->draw(commandBuffer);
+void XeRenderSystem::loadUniformObject(void *uniformBufferData, uint32_t uniformBufferSize) {
+  uboBuffers[xeRenderer.getFrameIndex()]->writeToBuffer(uniformBufferData);
+  uboBuffers[xeRenderer.getFrameIndex()]->flush();
+}
+
+void XeRenderSystem::render(XeGameObject &gameObject) {
+  if(!boundPipeline){
+    xeRenderer.beginSwapChainRenderPass(xeRenderer.getCurrentCommandBuffer());
+    xePipeline->bind(xeRenderer.getCurrentCommandBuffer());
+    boundPipeline = true;
   }
 
+  gameObject.model->bind(xeRenderer.getCurrentCommandBuffer());
+  gameObject.model->draw(xeRenderer.getCurrentCommandBuffer());
+
+}
+
+void XeRenderSystem::stop() {
+  boundPipeline = false;
+  boundDescriptor = false;
+  xeRenderer.endSwapChainRenderPass(xeRenderer.getCurrentCommandBuffer());
 }
 
 }

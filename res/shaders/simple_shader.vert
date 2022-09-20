@@ -26,5 +26,5 @@ void main() {
 
   float lightIntensity = AMBIENT + max(dot(normalWorldSpace, ubo.directionToLight), 0);
 
-  fragColor = lightIntensity * color;
+  fragColor = lightIntensity * vec3(1/position.y,position.y,clamp(sin(position.x - position.z), 0, 1));
 }

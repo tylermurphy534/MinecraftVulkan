@@ -7,11 +7,9 @@
 #include <memory>
 #include <vector>
 
-namespace xe {
+namespace app {
 class FirstApp {
   public:
-    static constexpr int WIDTH = 800;
-    static constexpr int HEIGHT = 600;
 
     FirstApp();
     ~FirstApp();
@@ -22,10 +20,14 @@ class FirstApp {
     void run();
 
   private:
+  
+    static constexpr int WIDTH = 800;
+    static constexpr int HEIGHT = 600;
+
     void loadGameObjects();
 
-    XeEngine xeEngine;
+    xe::XeEngine xeEngine;
 
-    std::vector<XeGameObject> gameObjects;
+    std::vector<xe::XeGameObject> gameObjects;
 };
 }

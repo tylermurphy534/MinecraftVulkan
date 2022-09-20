@@ -4,7 +4,7 @@
 #include "xe_window.hpp"
 #include <GLFW/glfw3.h>
 
-namespace xe {
+namespace app {
   class KeyboardMovementController {
 
     public:
@@ -21,7 +21,7 @@ namespace xe {
         int lookDown = GLFW_KEY_DOWN;
       };
 
-      void moveInPlaneXZ(GLFWwindow* window, float dt, XeGameObject& gameObject);
+      void moveInPlaneXZ(GLFWwindow* window, float dt, xe::XeGameObject& gameObject);
 
       KeyMappings keys{};
       float moveSpeed{3.f};

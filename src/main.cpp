@@ -5,7 +5,7 @@
 #include <stdexcept>
 
 int main() {
-    xe::FirstApp app{};
+    app::FirstApp app{};
 
     try {
         app.run();
