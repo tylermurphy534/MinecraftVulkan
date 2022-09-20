@@ -26,9 +26,9 @@ void FirstApp::run() {
 
   SimpleRenderer renderer{xeEngine};
     
-  xeEngine.getCamera().setViewTarget(glm::vec3(-1.f, -2.f, 20.f), glm::vec3(0.f, 0.f, 2.5f));
-
   auto viewerObject = xe::XeGameObject::createGameObject();
+  viewerObject.transform.translation = {-7.f, 3.f, -7.f};
+  viewerObject.transform.rotation.y = glm::radians(45.f);
   KeyboardMovementController cameraController{};
 
   while (xeEngine.poll()) {

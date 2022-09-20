@@ -29,7 +29,9 @@ XeRenderSystem::XeRenderSystem(
 }
 
 
-XeRenderSystem::~XeRenderSystem() {};
+XeRenderSystem::~XeRenderSystem() {
+  vkDestroyPipelineLayout(xeDevice.device(), pipelineLayout, nullptr);
+};
 
 void XeRenderSystem::createUniformBuffers(XeDescriptorPool &xeDescriptorPool, XeDescriptorSetLayout &xeDescriptorSetLayout, uint32_t uniformBufferDataSize) {
   if(uniformBufferDataSize == 0) return;
