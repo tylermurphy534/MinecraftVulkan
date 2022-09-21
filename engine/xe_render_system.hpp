@@ -41,8 +41,8 @@ class XeRenderSystem {
   
     void createDescriptorSetLayout();
     void createUniformBuffers();
-    void createTextureImageView(XeImage *image);
-    void createDescriptorSets(XeDescriptorPool &xeDescriptorPool);
+    void createDescriptorSets(XeImage *image);
+    void updateDescriptorSet(XeImage *image, int frameIndex, bool allocate);
     void createPipelineLayout();
     void createPipeline(VkRenderPass renderPass, std::string vert, std::string frag);
 
@@ -61,9 +61,9 @@ class XeRenderSystem {
     std::vector<VkDescriptorSet> descriptorSets;
 
     VkSampler textureSampler;
-    VkImageView textureImageView;
     
     VkPipelineLayout pipelineLayout;
+    std::unique_ptr<XeDescriptorPool> &xeDescriptorPool;
     std::unique_ptr<XeDescriptorSetLayout> xeDescriptorSetLayout;
 
 };

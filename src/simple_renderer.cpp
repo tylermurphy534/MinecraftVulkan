@@ -7,12 +7,13 @@ SimpleRenderer::SimpleRenderer(xe::XeEngine &xeEngine, xe::XeImage *xeImage)
 
 void SimpleRenderer::render(std::vector<xe::XeGameObject> &gameObjects, xe::XeCamera &xeCamera, xe::XeImage *xeImage) {
 
+  xeRenderSystem.loadTexture(xeImage);
+
   xeRenderSystem.start();
 
   UniformBuffer ubo{};
   ubo.projectionView = xeCamera.getProjection() * xeCamera.getView();
   xeRenderSystem.loadUniformObject(&ubo);
-  xeRenderSystem.loadTexture(xeImage);
 
   for(auto &obj : gameObjects) {
     PushConstant pc{};

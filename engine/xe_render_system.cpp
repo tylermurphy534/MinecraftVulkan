@@ -25,13 +25,13 @@ XeRenderSystem::XeRenderSystem(
   XeImage *image
 ) : xeDevice{xeEngine.xeDevice}, 
     xeRenderer{xeEngine.xeRenderer},
+    xeDescriptorPool{xeEngine.xeDescriptorPool},
     pushCunstantDataSize{pushCunstantDataSize},
     uniformBufferDataSize{uniformBufferDataSize},
     textureSamplerBinding{image != nullptr} {
   createDescriptorSetLayout();
   createUniformBuffers();
-  createTextureImageView(image);
-  createDescriptorSets(*xeEngine.xeDescriptorPool);
+  createDescriptorSets(image);
   createPipelineLayout();
   createPipeline(xeRenderer.getSwapChainRenderPass(), vert, frag);
 }
@@ -41,7 +41,6 @@ XeRenderSystem::~XeRenderSystem() {
   vkDestroyPipelineLayout(xeDevice.device(), pipelineLayout, nullptr);
   if ( textureSamplerBinding ) {
     vkDestroySampler(xeDevice.device(), textureSampler, nullptr);
-    vkDestroyImageView(xeDevice.device(), textureImageView, nullptr);
   }
 };
 
@@ -100,34 +99,18 @@ void XeRenderSystem::createUniformBuffers() {
 
 }
 
-void XeRenderSystem::createTextureImageView(XeImage *image) {
-
-  if (!textureSamplerBinding) { 
-    return;
-  }
-
-  VkImageViewCreateInfo viewInfo{};
-  viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-  viewInfo.image = image->textureImage;
-  viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-  viewInfo.format = VK_FORMAT_R8G8B8A8_SRGB;
-  viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-  viewInfo.subresourceRange.baseMipLevel = 0;
-  viewInfo.subresourceRange.levelCount = 1;
-  viewInfo.subresourceRange.baseArrayLayer = 0;
-  viewInfo.subresourceRange.layerCount = 1;
-
-  if (vkCreateImageView(xeDevice.device(), &viewInfo, nullptr, &textureImageView) != VK_SUCCESS) {
-    throw std::runtime_error("failed to create texture image view!");
-  }
-}
-
-void XeRenderSystem::createDescriptorSets(XeDescriptorPool &xeDescriptorPool) {
+void XeRenderSystem::createDescriptorSets(XeImage *image) {
 
   descriptorSets = std::vector<VkDescriptorSet>(XeSwapChain::MAX_FRAMES_IN_FLIGHT);
   for (int i = 0; i < descriptorSets.size(); i++) {
-    auto bufferInfo = uboBuffers[i]->descriptorInfo();
-    XeDescriptorWriter writer{*xeDescriptorSetLayout, xeDescriptorPool};
+    updateDescriptorSet(image, i, true);
+  }
+
+}
+
+void XeRenderSystem::updateDescriptorSet(XeImage *image, int frameIndex, bool allocate) {
+  auto bufferInfo = uboBuffers[frameIndex]->descriptorInfo();
+    XeDescriptorWriter writer{*xeDescriptorSetLayout, *xeDescriptorPool};
     
     int binding = 0;
 
@@ -139,14 +122,17 @@ void XeRenderSystem::createDescriptorSets(XeDescriptorPool &xeDescriptorPool) {
     if (textureSamplerBinding) {
       VkDescriptorImageInfo imageInfo{};
       imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-      imageInfo.imageView = textureImageView;
+      imageInfo.imageView = image->textureImageView;
       imageInfo.sampler = textureSampler;
       writer.writeImage(binding, &imageInfo);
       binding += 1;
     }
-    writer.build(descriptorSets[i]);
-  }
-
+    if (allocate) {
+      writer.build(descriptorSets[frameIndex]);
+    } else {
+      writer.overwrite(descriptorSets[frameIndex]);
+    }
+    
 }
 
 
@@ -234,7 +220,7 @@ void XeRenderSystem::loadUniformObject(void *uniformBufferData) {
 }
 
 void XeRenderSystem::loadTexture(XeImage *image) {
-  // createTextureImageView(image);
+  updateDescriptorSet(image, xeRenderer.getFrameIndex(), false);
 }
 
 void XeRenderSystem::render(XeGameObject &gameObject) {
