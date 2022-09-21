@@ -27,7 +27,7 @@ std::shared_ptr<XeModel> XeEngine::loadModelFromFile(const std::string &filename
 std::shared_ptr<XeModel> XeEngine::loadModelFromData(std::vector<XeModel::Vertex> vertices, std::vector<uint32_t> indices) {
   XeModel::Builder builder{};
   builder.vertices = vertices;
-  if(&indices == NULL) { 
+  if(indices.size() > 0) { 
     builder.indices = indices;
   }
   return std::make_shared<XeModel>(xeDevice, builder);

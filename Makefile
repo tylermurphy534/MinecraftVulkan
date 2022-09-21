@@ -5,6 +5,7 @@ INCFLAGS += -Iengine
 INCFLAGS += -Ilib/glfw/include
 INCFLAGS += -Ilib/glm
 INCFLAGS += -Ilib/stb
+INCFLAGS += -Ilib/openal/include
 
 CCFLAGS  = -std=c++17 -O2 -g
 CCFLAGS += $(INCFLAGS)
@@ -13,6 +14,7 @@ LDFLAGS = -lm
 LDFLAGS += $(INCFLAGS)
 LDFLAGS += lib/glfw/src/libglfw3.a
 LDFLAGS += lib/glm/glm/libglm_static.a
+LDFLAGS += lib/openal/build/libcommon.a
 LDFLAGS += -lvulkan
 
 SRC  = $(shell find src -name "*.cpp")
@@ -32,6 +34,7 @@ all: dirs libs shader build
 libs:
 	cd lib/glfw && cmake . && make
 	cd lib/glm && cmake . && make
+	cd lib/openal/build && cmake .. && make
 
 dirs:
 	mkdir -p ./$(BIN)

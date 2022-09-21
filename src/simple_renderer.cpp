@@ -10,6 +10,7 @@ SimpleRenderer::SimpleRenderer(xe::XeEngine &xeEngine, xe::XeImage *xeImage) {
     .addPushConstant(sizeof(PushConstant))
     .addUniformBinding(0, sizeof(UniformBuffer))
     .addTextureBinding(1, xeImage)
+    .setCulling(true)
     .build();
 }
 

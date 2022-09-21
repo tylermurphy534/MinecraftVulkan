@@ -36,8 +36,13 @@ class XeRenderSystem {
           return *this;
         }
 
+        Builder& setCulling(bool enabled) {
+          cullingEnabled = enabled;
+          return *this;
+        }
+
         std::unique_ptr<XeRenderSystem> build() {
-          return std::make_unique<XeRenderSystem>(xeEngine, std::move(vert), std::move(frag), std::move(uniformBindings), std::move(imageBindings), std::move(pushCunstantDataSize));
+          return std::make_unique<XeRenderSystem>(xeEngine, std::move(vert), std::move(frag), std::move(uniformBindings), std::move(imageBindings), std::move(pushCunstantDataSize), std::move(cullingEnabled));
         }
 
       private:
@@ -49,6 +54,8 @@ class XeRenderSystem {
         std::string vert;
         std::string frag;
 
+        bool cullingEnabled{false};
+
         XeEngine &xeEngine;
     };
 
@@ -58,7 +65,8 @@ class XeRenderSystem {
       std::string frag,
       std::map<uint32_t, uint32_t> uniformBindings,
       std::map<uint32_t, XeImage*> imageBindings,
-      uint32_t pushCunstantDataSize
+      uint32_t pushCunstantDataSize,
+      bool cullingEnabled
     );
 
     ~XeRenderSystem();
@@ -81,7 +89,7 @@ class XeRenderSystem {
     void createDescriptorSets();
     void updateDescriptorSet(int frameIndex, bool allocate);
     void createPipelineLayout();
-    void createPipeline(VkRenderPass renderPass, std::string vert, std::string frag);
+    void createPipeline(VkRenderPass renderPass, std::string vert, std::string frag, bool cullingEnabled);
 
     bool boundPipeline{false};
     bool boundDescriptor{false};

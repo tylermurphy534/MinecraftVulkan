@@ -22,7 +22,8 @@ XeRenderSystem::XeRenderSystem(
   std::string frag,
   std::map<uint32_t, uint32_t> uniformBindings,
   std::map<uint32_t, XeImage*> imageBindings,
-  uint32_t pushCunstantDataSize
+  uint32_t pushCunstantDataSize,
+  bool cullingEnabled
 ) : xeDevice{xeEngine.xeDevice}, 
     xeRenderer{xeEngine.xeRenderer},
     xeDescriptorPool{xeEngine.xeDescriptorPool},
@@ -34,7 +35,7 @@ XeRenderSystem::XeRenderSystem(
   createUniformBuffers();
   createDescriptorSets();
   createPipelineLayout();
-  createPipeline(xeRenderer.getSwapChainRenderPass(), vert, frag);
+  createPipeline(xeRenderer.getSwapChainRenderPass(), vert, frag, cullingEnabled);
 }
 
 
@@ -163,11 +164,14 @@ void XeRenderSystem::createPipelineLayout() {
 }
 
 
-void XeRenderSystem::createPipeline(VkRenderPass renderPass, std::string vert, std::string frag) {
+void XeRenderSystem::createPipeline(VkRenderPass renderPass, std::string vert, std::string frag, bool cullingEnabled) {
   assert(pipelineLayout != nullptr && "Cannot create pipeline before pipeline layout");
 
   PipelineConfigInfo pipelineConfig{};
   XePipeline::defaultPipelineConfigInfo(pipelineConfig);
+  if (cullingEnabled) {
+    pipelineConfig.rasterizationInfo.cullMode = VK_CULL_MODE_BACK_BIT;
+  }
   pipelineConfig.renderPass = renderPass;
   pipelineConfig.pipelineLayout = pipelineLayout;
   xePipeline = std::make_unique<XePipeline>(
