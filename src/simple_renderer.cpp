@@ -1,29 +1,37 @@
 #include "simple_renderer.hpp"
+#include "xe_render_system.hpp"
+
+#include <iostream>
 
 namespace app {
 
-SimpleRenderer::SimpleRenderer(xe::XeEngine &xeEngine, xe::XeImage *xeImage) 
-  : xeRenderSystem{xeEngine, "res/shaders/simple_shader.vert.spv", "res/shaders/simple_shader.frag.spv", sizeof(PushConstant), sizeof(UniformBuffer), xeImage} {};
+SimpleRenderer::SimpleRenderer(xe::XeEngine &xeEngine, xe::XeImage *xeImage) {
+  xeRenderSystem = xe::XeRenderSystem::Builder(xeEngine, "res/shaders/simple_shader.vert.spv", "res/shaders/simple_shader.frag.spv")
+    .addPushConstant(sizeof(PushConstant))
+    .addUniformBinding(0, sizeof(UniformBuffer))
+    .addTextureBinding(1, xeImage)
+    .build();
+}
 
 void SimpleRenderer::render(std::vector<xe::XeGameObject> &gameObjects, xe::XeCamera &xeCamera, xe::XeImage *xeImage) {
 
-  xeRenderSystem.loadTexture(xeImage);
+  xeRenderSystem->loadTexture(1, xeImage);
 
-  xeRenderSystem.start();
+  xeRenderSystem->start();
 
   UniformBuffer ubo{};
   ubo.projectionView = xeCamera.getProjection() * xeCamera.getView();
-  xeRenderSystem.loadUniformObject(&ubo);
+  xeRenderSystem->loadUniformObject(0, &ubo);
 
   for(auto &obj : gameObjects) {
     PushConstant pc{};
     pc.modelMatrix = obj.transform.mat4();
     pc.normalMatrix = obj.transform.normalMatrix();
-    xeRenderSystem.loadPushConstant(&pc);
-    xeRenderSystem.render(obj);
+    xeRenderSystem->loadPushConstant(&pc);
+    xeRenderSystem->render(obj);
   }
 
-  xeRenderSystem.stop();
+  xeRenderSystem->stop();
 
 }
 

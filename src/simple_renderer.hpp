@@ -29,7 +29,7 @@ class SimpleRenderer {
     void render(std::vector<xe::XeGameObject> &gameObjects, xe::XeCamera &xeCamera, xe::XeImage *xeImage);
 
   private:
-    xe::XeRenderSystem xeRenderSystem;
+    std::unique_ptr<xe::XeRenderSystem> xeRenderSystem;
 
 };
 

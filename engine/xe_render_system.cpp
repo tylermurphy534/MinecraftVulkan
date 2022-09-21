@@ -19,19 +19,20 @@ namespace xe {
 XeRenderSystem::XeRenderSystem(
   XeEngine &xeEngine,
   std::string vert,
-  std::string frag, 
-  uint32_t pushCunstantDataSize, 
-  uint32_t uniformBufferDataSize,
-  XeImage *image
+  std::string frag,
+  std::map<uint32_t, uint32_t> uniformBindings,
+  std::map<uint32_t, XeImage*> imageBindings,
+  uint32_t pushCunstantDataSize
 ) : xeDevice{xeEngine.xeDevice}, 
     xeRenderer{xeEngine.xeRenderer},
     xeDescriptorPool{xeEngine.xeDescriptorPool},
     pushCunstantDataSize{pushCunstantDataSize},
-    uniformBufferDataSize{uniformBufferDataSize},
-    textureSamplerBinding{image != nullptr} {
+    uniformBindings{uniformBindings},
+    imageBindings{imageBindings} {
+  createTextureSampler();
   createDescriptorSetLayout();
   createUniformBuffers();
-  createDescriptorSets(image);
+  createDescriptorSets();
   createPipelineLayout();
   createPipeline(xeRenderer.getSwapChainRenderPass(), vert, frag);
 }
@@ -39,99 +40,96 @@ XeRenderSystem::XeRenderSystem(
 
 XeRenderSystem::~XeRenderSystem() {
   vkDestroyPipelineLayout(xeDevice.device(), pipelineLayout, nullptr);
-  if ( textureSamplerBinding ) {
-    vkDestroySampler(xeDevice.device(), textureSampler, nullptr);
-  }
+  vkDestroySampler(xeDevice.device(), textureSampler, nullptr);
 };
+
+void XeRenderSystem::createTextureSampler() {
+  VkSamplerCreateInfo samplerInfo{};
+  samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+  samplerInfo.magFilter = VK_FILTER_LINEAR;
+  samplerInfo.minFilter = VK_FILTER_LINEAR;
+  samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+  samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+  samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+  samplerInfo.anisotropyEnable = VK_FALSE;
+  samplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
+  samplerInfo.unnormalizedCoordinates = VK_FALSE;
+  samplerInfo.compareEnable = VK_FALSE;
+  samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
+  samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+  samplerInfo.mipLodBias = 0.0f;
+  samplerInfo.minLod = 0.0f;
+  samplerInfo.maxLod = 0.0f;
+
+  if (vkCreateSampler(xeDevice.device(), &samplerInfo, nullptr, &textureSampler) != VK_SUCCESS) {
+    throw std::runtime_error("failed to create texture sampler!");
+  }
+}
 
 void XeRenderSystem::createDescriptorSetLayout() {
   XeDescriptorSetLayout::Builder builder{xeDevice};
-  int binding = 0;
-
-  if (uniformBufferDataSize > 0) {
+  
+  for ( const auto &[binding, size]: uniformBindings) {
     builder.addBinding(binding, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT, nullptr);
-    binding += 1;
   }
-  if (textureSamplerBinding) {
 
-    VkSamplerCreateInfo samplerInfo{};
-    samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
-    samplerInfo.magFilter = VK_FILTER_LINEAR;
-    samplerInfo.minFilter = VK_FILTER_LINEAR;
-    samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-    samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-    samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-    samplerInfo.anisotropyEnable = VK_FALSE;
-    samplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
-    samplerInfo.unnormalizedCoordinates = VK_FALSE;
-    samplerInfo.compareEnable = VK_FALSE;
-    samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
-    samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
-    samplerInfo.mipLodBias = 0.0f;
-    samplerInfo.minLod = 0.0f;
-    samplerInfo.maxLod = 0.0f;
-
-    if (vkCreateSampler(xeDevice.device(), &samplerInfo, nullptr, &textureSampler) != VK_SUCCESS) {
-        throw std::runtime_error("failed to create texture sampler!");
-    }
-
+  for ( const auto &[binding, image]: imageBindings) {
     builder.addBinding(binding, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, &textureSampler);
-    binding += 1;
   }
 
   xeDescriptorSetLayout = builder.build();
 }
 
 void XeRenderSystem::createUniformBuffers() {
-  if(uniformBufferDataSize == 0) return;
-
-  uboBuffers = std::vector<std::unique_ptr<XeBuffer>>(XeSwapChain::MAX_FRAMES_IN_FLIGHT);
-  for (int i = 0; i < uboBuffers.size(); i++) {
-    uboBuffers[i] = std::make_unique<XeBuffer>(
-      xeDevice,
-      uniformBufferDataSize,
-      XeSwapChain::MAX_FRAMES_IN_FLIGHT,
-
-      VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-      VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-    uboBuffers[i]->map();
+  for ( const auto &[binding, bufferSize]: uniformBindings) {
+    uboBuffers[binding] = std::vector<std::unique_ptr<XeBuffer>>(XeSwapChain::MAX_FRAMES_IN_FLIGHT);
+    for (int i = 0; i < uboBuffers[binding].size(); i++) {
+      uboBuffers[binding][i] = std::make_unique<XeBuffer>(
+        xeDevice,
+        bufferSize,
+        XeSwapChain::MAX_FRAMES_IN_FLIGHT,
+        VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+        VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+      uboBuffers[binding][i]->map();
+    }
   }
-
 }
 
-void XeRenderSystem::createDescriptorSets(XeImage *image) {
+void XeRenderSystem::createDescriptorSets() {
 
   descriptorSets = std::vector<VkDescriptorSet>(XeSwapChain::MAX_FRAMES_IN_FLIGHT);
   for (int i = 0; i < descriptorSets.size(); i++) {
-    updateDescriptorSet(image, i, true);
+    updateDescriptorSet(i, true);
   }
 
 }
 
-void XeRenderSystem::updateDescriptorSet(XeImage *image, int frameIndex, bool allocate) {
-  auto bufferInfo = uboBuffers[frameIndex]->descriptorInfo();
-    XeDescriptorWriter writer{*xeDescriptorSetLayout, *xeDescriptorPool};
-    
-    int binding = 0;
+void XeRenderSystem::updateDescriptorSet(int frameIndex, bool allocate) {
 
-    if (uniformBufferDataSize > 0) {
-      writer.writeBuffer(binding, &bufferInfo);
-      binding += 1;
-    }
-    
-    if (textureSamplerBinding) {
-      VkDescriptorImageInfo imageInfo{};
-      imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-      imageInfo.imageView = image->textureImageView;
-      imageInfo.sampler = textureSampler;
-      writer.writeImage(binding, &imageInfo);
-      binding += 1;
-    }
-    if (allocate) {
-      writer.build(descriptorSets[frameIndex]);
-    } else {
-      writer.overwrite(descriptorSets[frameIndex]);
-    }
+  XeDescriptorWriter writer{*xeDescriptorSetLayout, *xeDescriptorPool};
+
+  std::vector<VkDescriptorBufferInfo> bufferInfos{};
+
+  int i = 0;
+  for ( const auto &[binding, size]: uniformBindings) {
+    bufferInfos.push_back(uboBuffers[binding][frameIndex]->descriptorInfo());
+    writer.writeBuffer(binding, &bufferInfos[i]);
+    i++;
+  }
+
+  for ( const auto &[binding, image]: imageBindings) {
+    VkDescriptorImageInfo imageInfo{};
+    imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+    imageInfo.imageView = image->textureImageView;
+    imageInfo.sampler = textureSampler;
+    writer.writeImage(binding, &imageInfo);
+  }
+
+  if (allocate) {
+    writer.build(descriptorSets[frameIndex]);
+  } else {
+    writer.overwrite(descriptorSets[frameIndex]);
+  }
     
 }
 
@@ -143,8 +141,12 @@ void XeRenderSystem::createPipelineLayout() {
   pushConstantRange.offset = 0;
   pushConstantRange.size = pushCunstantDataSize;
 
+  std::vector<VkDescriptorSetLayout> descriptorSetLayouts{xeDescriptorSetLayout->getDescriptorSetLayout()};
+
   VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
   pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+  pipelineLayoutInfo.setLayoutCount = static_cast<uint32_t>(descriptorSetLayouts.size());
+  pipelineLayoutInfo.pSetLayouts = descriptorSetLayouts.data();
 
   if (pushCunstantDataSize > 0) {
     pipelineLayoutInfo.pushConstantRangeCount = 1;
@@ -152,17 +154,6 @@ void XeRenderSystem::createPipelineLayout() {
   } else {
     pipelineLayoutInfo.pushConstantRangeCount = 0;
     pipelineLayoutInfo.pPushConstantRanges = nullptr;
-  }
-
-  std::vector<VkDescriptorSetLayout> descriptorSetLayouts{xeDescriptorSetLayout->getDescriptorSetLayout()};
-
-  if (uniformBufferDataSize > 0) {
-    pipelineLayoutInfo.setLayoutCount = static_cast<uint32_t>(descriptorSetLayouts.size());
-    pipelineLayoutInfo.pSetLayouts = descriptorSetLayouts.data();
-  } else {
-
-    pipelineLayoutInfo.setLayoutCount = 0;
-    pipelineLayoutInfo.pSetLayouts = nullptr;
   }
 
   if(vkCreatePipelineLayout(xeDevice.device(), &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS) {
@@ -215,12 +206,13 @@ void XeRenderSystem::loadPushConstant(void *pushConstantData) {
         pushConstantData);
 }
 
-void XeRenderSystem::loadUniformObject(void *uniformBufferData) {
-  uboBuffers[xeRenderer.getFrameIndex()]->writeToBuffer(uniformBufferData);
+void XeRenderSystem::loadUniformObject(uint32_t binding, void *uniformBufferData) {
+  uboBuffers[binding][xeRenderer.getFrameIndex()]->writeToBuffer(uniformBufferData);
 }
 
-void XeRenderSystem::loadTexture(XeImage *image) {
-  updateDescriptorSet(image, xeRenderer.getFrameIndex(), false);
+void XeRenderSystem::loadTexture(uint32_t binding, XeImage *image) {
+  imageBindings[binding] = image;
+  updateDescriptorSet(xeRenderer.getFrameIndex(), false);
 }
 
 void XeRenderSystem::render(XeGameObject &gameObject) {
