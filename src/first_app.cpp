@@ -14,6 +14,8 @@
 #include <glm/gtc/constants.hpp>
 #include <array>
 
+#include <string>
+
 namespace app {
 
 FirstApp::FirstApp() : xeEngine{WIDTH, HEIGHT, "Hello, Vulkan!"} {
@@ -24,7 +26,12 @@ FirstApp::~FirstApp() {}
 
 void FirstApp::run() {
 
-  SimpleRenderer renderer{xeEngine};
+  const std::string s = "res/image/texture.png";
+
+  std::shared_ptr<xe::XeImage> image = xeEngine.loadImage("res/image/texture.png"); 
+  std::shared_ptr<xe::XeImage> image2 = xeEngine.loadImage("res/image/scaly.png"); 
+
+  SimpleRenderer renderer{xeEngine, image.get()};
     
   auto viewerObject = xe::XeGameObject::createGameObject();
   viewerObject.transform.translation = {-7.f, 3.f, -7.f};
@@ -39,7 +46,7 @@ void FirstApp::run() {
     xeEngine.getCamera().setViewYXZ(viewerObject.transform.translation, viewerObject.transform.rotation);
 
     if(xeEngine.beginFrame()) {
-      renderer.render(gameObjects, xeEngine.getCamera());
+      renderer.render(gameObjects, xeEngine.getCamera(), image2.get());
       xeEngine.endFrame();
     }
   }

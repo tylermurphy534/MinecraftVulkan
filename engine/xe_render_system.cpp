@@ -21,19 +21,69 @@ XeRenderSystem::XeRenderSystem(
   std::string vert,
   std::string frag, 
   uint32_t pushCunstantDataSize, 
-  uint32_t uniformBufferDataSize) 
-  : xeDevice{xeEngine.xeDevice}, xeRenderer{xeEngine.xeRenderer} {
-  createUniformBuffers(*xeEngine.xeDescriptorPool, *xeEngine.xeDescriptorSetLayout, uniformBufferDataSize);
-  createPipelineLayout(*xeEngine.xeDescriptorSetLayout, pushCunstantDataSize, uniformBufferDataSize);
+  uint32_t uniformBufferDataSize,
+  XeImage *image
+) : xeDevice{xeEngine.xeDevice}, 
+    xeRenderer{xeEngine.xeRenderer},
+    pushCunstantDataSize{pushCunstantDataSize},
+    uniformBufferDataSize{uniformBufferDataSize},
+    textureSamplerBinding{image != nullptr} {
+  createDescriptorSetLayout();
+  createUniformBuffers();
+  createTextureImageView(image);
+  createDescriptorSets(*xeEngine.xeDescriptorPool);
+  createPipelineLayout();
   createPipeline(xeRenderer.getSwapChainRenderPass(), vert, frag);
 }
 
 
 XeRenderSystem::~XeRenderSystem() {
   vkDestroyPipelineLayout(xeDevice.device(), pipelineLayout, nullptr);
+  if ( textureSamplerBinding ) {
+    vkDestroySampler(xeDevice.device(), textureSampler, nullptr);
+    vkDestroyImageView(xeDevice.device(), textureImageView, nullptr);
+  }
 };
 
-void XeRenderSystem::createUniformBuffers(XeDescriptorPool &xeDescriptorPool, XeDescriptorSetLayout &xeDescriptorSetLayout, uint32_t uniformBufferDataSize) {
+void XeRenderSystem::createDescriptorSetLayout() {
+  XeDescriptorSetLayout::Builder builder{xeDevice};
+  int binding = 0;
+
+  if (uniformBufferDataSize > 0) {
+    builder.addBinding(binding, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT, nullptr);
+    binding += 1;
+  }
+  if (textureSamplerBinding) {
+
+    VkSamplerCreateInfo samplerInfo{};
+    samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+    samplerInfo.magFilter = VK_FILTER_LINEAR;
+    samplerInfo.minFilter = VK_FILTER_LINEAR;
+    samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+    samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+    samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+    samplerInfo.anisotropyEnable = VK_FALSE;
+    samplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
+    samplerInfo.unnormalizedCoordinates = VK_FALSE;
+    samplerInfo.compareEnable = VK_FALSE;
+    samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
+    samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+    samplerInfo.mipLodBias = 0.0f;
+    samplerInfo.minLod = 0.0f;
+    samplerInfo.maxLod = 0.0f;
+
+    if (vkCreateSampler(xeDevice.device(), &samplerInfo, nullptr, &textureSampler) != VK_SUCCESS) {
+        throw std::runtime_error("failed to create texture sampler!");
+    }
+
+    builder.addBinding(binding, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, &textureSampler);
+    binding += 1;
+  }
+
+  xeDescriptorSetLayout = builder.build();
+}
+
+void XeRenderSystem::createUniformBuffers() {
   if(uniformBufferDataSize == 0) return;
 
   uboBuffers = std::vector<std::unique_ptr<XeBuffer>>(XeSwapChain::MAX_FRAMES_IN_FLIGHT);
@@ -42,22 +92,65 @@ void XeRenderSystem::createUniformBuffers(XeDescriptorPool &xeDescriptorPool, Xe
       xeDevice,
       uniformBufferDataSize,
       XeSwapChain::MAX_FRAMES_IN_FLIGHT,
+
       VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-      VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
+      VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
     uboBuffers[i]->map();
   }
+
+}
+
+void XeRenderSystem::createTextureImageView(XeImage *image) {
+
+  if (!textureSamplerBinding) { 
+    return;
+  }
+
+  VkImageViewCreateInfo viewInfo{};
+  viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+  viewInfo.image = image->textureImage;
+  viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+  viewInfo.format = VK_FORMAT_R8G8B8A8_SRGB;
+  viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+  viewInfo.subresourceRange.baseMipLevel = 0;
+  viewInfo.subresourceRange.levelCount = 1;
+  viewInfo.subresourceRange.baseArrayLayer = 0;
+  viewInfo.subresourceRange.layerCount = 1;
+
+  if (vkCreateImageView(xeDevice.device(), &viewInfo, nullptr, &textureImageView) != VK_SUCCESS) {
+    throw std::runtime_error("failed to create texture image view!");
+  }
+}
+
+void XeRenderSystem::createDescriptorSets(XeDescriptorPool &xeDescriptorPool) {
 
   descriptorSets = std::vector<VkDescriptorSet>(XeSwapChain::MAX_FRAMES_IN_FLIGHT);
   for (int i = 0; i < descriptorSets.size(); i++) {
     auto bufferInfo = uboBuffers[i]->descriptorInfo();
-    XeDescriptorWriter(xeDescriptorSetLayout, xeDescriptorPool)
-      .writeBuffer(0, &bufferInfo)
-      .build(descriptorSets[i]);
+    XeDescriptorWriter writer{*xeDescriptorSetLayout, xeDescriptorPool};
+    
+    int binding = 0;
+
+    if (uniformBufferDataSize > 0) {
+      writer.writeBuffer(binding, &bufferInfo);
+      binding += 1;
+    }
+    
+    if (textureSamplerBinding) {
+      VkDescriptorImageInfo imageInfo{};
+      imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+      imageInfo.imageView = textureImageView;
+      imageInfo.sampler = textureSampler;
+      writer.writeImage(binding, &imageInfo);
+      binding += 1;
+    }
+    writer.build(descriptorSets[i]);
   }
+
 }
 
 
-void XeRenderSystem::createPipelineLayout(XeDescriptorSetLayout &xeDescriptorSetLayout, uint32_t pushCunstantDataSize, uint32_t uniformBufferDataSize) {
+void XeRenderSystem::createPipelineLayout() {
 
   VkPushConstantRange pushConstantRange;
   pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
@@ -75,12 +168,13 @@ void XeRenderSystem::createPipelineLayout(XeDescriptorSetLayout &xeDescriptorSet
     pipelineLayoutInfo.pPushConstantRanges = nullptr;
   }
 
-  std::vector<VkDescriptorSetLayout> descriptorSetLayouts{xeDescriptorSetLayout.getDescriptorSetLayout()};
+  std::vector<VkDescriptorSetLayout> descriptorSetLayouts{xeDescriptorSetLayout->getDescriptorSetLayout()};
 
   if (uniformBufferDataSize > 0) {
     pipelineLayoutInfo.setLayoutCount = static_cast<uint32_t>(descriptorSetLayouts.size());
     pipelineLayoutInfo.pSetLayouts = descriptorSetLayouts.data();
   } else {
+
     pipelineLayoutInfo.setLayoutCount = 0;
     pipelineLayoutInfo.pSetLayouts = nullptr;
   }
@@ -107,13 +201,11 @@ void XeRenderSystem::createPipeline(VkRenderPass renderPass, std::string vert, s
   );
 }
 
-void XeRenderSystem::loadPushConstant(void *pushConstantData, uint32_t pushConstantSize) {
-  if(!boundPipeline) {
-    xeRenderer.beginSwapChainRenderPass(xeRenderer.getCurrentCommandBuffer());
-    xePipeline->bind(xeRenderer.getCurrentCommandBuffer());
-    boundPipeline = true;
-  }
-  if(!boundDescriptor) {
+void XeRenderSystem::start() {
+  xeRenderer.beginSwapChainRenderPass(xeRenderer.getCurrentCommandBuffer());
+  xePipeline->bind(xeRenderer.getCurrentCommandBuffer());
+  if(descriptorSets.size() > 0) {
+
     vkCmdBindDescriptorSets(
         xeRenderer.getCurrentCommandBuffer(),
         VK_PIPELINE_BIND_POINT_GRAPHICS,
@@ -123,28 +215,29 @@ void XeRenderSystem::loadPushConstant(void *pushConstantData, uint32_t pushConst
         &descriptorSets[xeRenderer.getFrameIndex()],
         0,
         nullptr);
-    boundDescriptor = true;
+
   }
+}
+
+void XeRenderSystem::loadPushConstant(void *pushConstantData) {
   vkCmdPushConstants(
         xeRenderer.getCurrentCommandBuffer(), 
         pipelineLayout, 
         VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 
         0, 
-        pushConstantSize,
+        pushCunstantDataSize,
         pushConstantData);
 }
 
-void XeRenderSystem::loadUniformObject(void *uniformBufferData, uint32_t uniformBufferSize) {
+void XeRenderSystem::loadUniformObject(void *uniformBufferData) {
   uboBuffers[xeRenderer.getFrameIndex()]->writeToBuffer(uniformBufferData);
-  uboBuffers[xeRenderer.getFrameIndex()]->flush();
+}
+
+void XeRenderSystem::loadTexture(XeImage *image) {
+  // createTextureImageView(image);
 }
 
 void XeRenderSystem::render(XeGameObject &gameObject) {
-  if(!boundPipeline){
-    xeRenderer.beginSwapChainRenderPass(xeRenderer.getCurrentCommandBuffer());
-    xePipeline->bind(xeRenderer.getCurrentCommandBuffer());
-    boundPipeline = true;
-  }
 
   gameObject.model->bind(xeRenderer.getCurrentCommandBuffer());
   gameObject.model->draw(xeRenderer.getCurrentCommandBuffer());
@@ -152,8 +245,6 @@ void XeRenderSystem::render(XeGameObject &gameObject) {
 }
 
 void XeRenderSystem::stop() {
-  boundPipeline = false;
-  boundDescriptor = false;
   xeRenderer.endSwapChainRenderPass(xeRenderer.getCurrentCommandBuffer());
 }
 

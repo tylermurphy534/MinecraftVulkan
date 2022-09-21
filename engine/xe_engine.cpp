@@ -1,4 +1,5 @@
 #include "xe_engine.hpp"
+#include "xe_image.hpp"
 #include <chrono> 
 
 namespace xe {
@@ -7,18 +8,15 @@ XeEngine::XeEngine(int width, int height, std::string name) : xeWindow{width, he
   xeDevice{xeWindow}, 
   xeRenderer{xeWindow, xeDevice},
   xeCamera{} {
-  loadDescriptors();
+  loadDescriptorPool();
 };
 
-void XeEngine::loadDescriptors() {
+void XeEngine::loadDescriptorPool() {
   xeDescriptorPool = XeDescriptorPool::Builder(xeDevice)
     .setMaxSets(XeSwapChain::MAX_FRAMES_IN_FLIGHT)
     .addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, XeSwapChain::MAX_FRAMES_IN_FLIGHT)
     .addPoolSize(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, XeSwapChain::MAX_FRAMES_IN_FLIGHT)
-    .build();
-
-  xeDescriptorSetLayout = XeDescriptorSetLayout::Builder(xeDevice)
-    .addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
+    .addPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, XeSwapChain::MAX_FRAMES_IN_FLIGHT)
     .build();
 }
 
@@ -33,6 +31,10 @@ std::shared_ptr<XeModel> XeEngine::loadModelFromData(std::vector<XeModel::Vertex
     builder.indices = indices;
   }
   return std::make_shared<XeModel>(xeDevice, builder);
+}
+
+std::shared_ptr<XeImage> XeEngine::loadImage(const std::string &filename) {
+  return std::make_shared<XeImage>(xeDevice, filename);
 }
 
 bool XeEngine::poll() {

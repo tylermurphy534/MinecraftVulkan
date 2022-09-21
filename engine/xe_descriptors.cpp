@@ -9,13 +9,15 @@ XeDescriptorSetLayout::Builder &XeDescriptorSetLayout::Builder::addBinding(
     uint32_t binding,
     VkDescriptorType descriptorType,
     VkShaderStageFlags stageFlags,
-    uint32_t count) {
+    VkSampler *sampler) {
   assert(bindings.count(binding) == 0 && "Binding already in use");
+  uint32_t count = 1;
   VkDescriptorSetLayoutBinding layoutBinding{};
   layoutBinding.binding = binding;
   layoutBinding.descriptorType = descriptorType;
   layoutBinding.descriptorCount = count;
   layoutBinding.stageFlags = stageFlags;
+  layoutBinding.pImmutableSamplers = sampler;
   bindings[binding] = layoutBinding;
   return *this;
 }

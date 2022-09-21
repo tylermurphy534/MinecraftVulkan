@@ -5,8 +5,9 @@
 #include "xe_renderer.hpp"
 #include "xe_camera.hpp"
 #include "xe_descriptors.hpp"
-#include <chrono> 
+#include "xe_image.hpp"
 
+#include <chrono> 
 #include <string>
 namespace xe {
 
@@ -26,7 +27,8 @@ class XeEngine {
 
     std::shared_ptr<XeModel> loadModelFromFile(const std::string &filename);
     std::shared_ptr<XeModel> loadModelFromData(std::vector<XeModel::Vertex> vertices, std::vector<uint32_t> indices);
-
+    std::shared_ptr<XeImage> loadImage(const std::string &filename);
+    
     bool beginFrame() { return xeRenderer.beginFrame(); }
     void endFrame() { xeRenderer.endFrame(); }
     void close() { vkDeviceWaitIdle(xeDevice.device()); }
@@ -36,7 +38,7 @@ class XeEngine {
 
   private:
 
-    void loadDescriptors();
+    void loadDescriptorPool();
 
     XeWindow xeWindow;
     XeDevice xeDevice;
@@ -49,7 +51,6 @@ class XeEngine {
     float FOV = 50.f;
 
     std::unique_ptr<XeDescriptorPool> xeDescriptorPool;
-    std::unique_ptr<XeDescriptorSetLayout> xeDescriptorSetLayout;
 
     friend class XeRenderSystem;
 };

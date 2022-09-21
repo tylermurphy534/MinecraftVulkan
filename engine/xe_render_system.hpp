@@ -7,6 +7,7 @@
 #include "xe_descriptors.hpp"
 #include "xe_renderer.hpp"
 #include "xe_engine.hpp"
+#include "xe_image.hpp"
 
 #include <memory>
 
@@ -20,7 +21,8 @@ class XeRenderSystem {
       std::string vert,
       std::string frag, 
       uint32_t pushCunstantDataSize,
-      uint32_t uniformBufferDataSize
+      uint32_t uniformBufferDataSize,
+      XeImage *image
     );
 
     ~XeRenderSystem();
@@ -28,19 +30,28 @@ class XeRenderSystem {
     XeRenderSystem(const XeRenderSystem &) = delete;
     XeRenderSystem operator=(const XeRenderSystem &) = delete;
 
-    void loadPushConstant(void *pushConstantData, uint32_t pushConstantSize);
-    void loadUniformObject(void *uniformBufferData, uint32_t uniformBufferSize);
+    void start();
+    void loadPushConstant(void *pushConstantData);
+    void loadUniformObject(void *uniformBufferData);
+    void loadTexture(XeImage *image);
     void render(XeGameObject &gameObject);
     void stop();
 
   private:
   
-    void createUniformBuffers(XeDescriptorPool &xeDescriptorPool, XeDescriptorSetLayout &xeDescriptorSetLayout, uint32_t uniformBufferDataSize);
-    void createPipelineLayout(XeDescriptorSetLayout &xeDescriptorSetLayout, uint32_t pushCunstantDataSize, uint32_t uniformBufferDataSize);
+    void createDescriptorSetLayout();
+    void createUniformBuffers();
+    void createTextureImageView(XeImage *image);
+    void createDescriptorSets(XeDescriptorPool &xeDescriptorPool);
+    void createPipelineLayout();
     void createPipeline(VkRenderPass renderPass, std::string vert, std::string frag);
 
     bool boundPipeline{false};
     bool boundDescriptor{false};
+
+    uint32_t uniformBufferDataSize;
+    uint32_t pushCunstantDataSize;
+    bool textureSamplerBinding;
 
     XeDevice& xeDevice;
     XeRenderer& xeRenderer;
@@ -49,7 +60,11 @@ class XeRenderSystem {
     std::vector<std::unique_ptr<XeBuffer>> uboBuffers;
     std::vector<VkDescriptorSet> descriptorSets;
 
+    VkSampler textureSampler;
+    VkImageView textureImageView;
+    
     VkPipelineLayout pipelineLayout;
+    std::unique_ptr<XeDescriptorSetLayout> xeDescriptorSetLayout;
 
 };
 

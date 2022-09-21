@@ -19,7 +19,7 @@ class XeDescriptorSetLayout {
         uint32_t binding,
         VkDescriptorType descriptorType,
         VkShaderStageFlags stageFlags,
-        uint32_t count = 1);
+        VkSampler *sampler);
     std::unique_ptr<XeDescriptorSetLayout> build() const;
 
    private:

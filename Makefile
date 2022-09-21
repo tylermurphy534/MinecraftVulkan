@@ -4,6 +4,7 @@ INCFLAGS  = -Isrc
 INCFLAGS += -Iengine
 INCFLAGS += -Ilib/glfw/include
 INCFLAGS += -Ilib/glm
+INCFLAGS += -Ilib/stb
 
 CCFLAGS  = -std=c++17 -O2 -g
 CCFLAGS += $(INCFLAGS)
