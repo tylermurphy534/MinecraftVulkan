@@ -6,6 +6,7 @@
 #include "xe_camera.hpp"
 #include "xe_descriptors.hpp"
 #include "xe_image.hpp"
+#include "xe_sound_device.hpp"
 
 #include <chrono> 
 #include <string>
@@ -44,6 +45,7 @@ class XeEngine {
     XeDevice xeDevice;
     XeRenderer xeRenderer;
     XeCamera xeCamera;
+    XeSoundDevice xeSoundDevice;
 
     std::chrono::_V2::system_clock::time_point currentTime;
     float frameTime;

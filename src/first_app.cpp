@@ -7,6 +7,7 @@
 #include "xe_render_system.hpp"
 #include "keyboard_movement_controller.hpp"
 #include "simple_renderer.hpp"
+#include "xe_sound.hpp"
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
@@ -26,12 +27,13 @@ FirstApp::~FirstApp() {}
 
 void FirstApp::run() {
 
-  const std::string s = "res/image/texture.png";
-
   std::shared_ptr<xe::XeImage> image = xeEngine.loadImage("res/image/texture.png"); 
   std::shared_ptr<xe::XeImage> image2 = xeEngine.loadImage("res/image/scaly.png"); 
 
   SimpleRenderer renderer{xeEngine, image.get()};
+
+  xe::XeSound sound{"res/sound/when_the_world_ends.wav"};
+  sound.play();
     
   auto viewerObject = xe::XeGameObject::createGameObject();
   viewerObject.transform.translation = {-7.f, 3.f, -7.f};
