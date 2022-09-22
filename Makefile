@@ -31,11 +31,7 @@ FRAGOBJ = $(patsubst %.frag, %.frag.spv, $(FRAGSRC))
 
 .PHONY: all clean
 
-all: dirs libs shader build
-
-libs:
-	cd lib/glfw && cmake . && make
-	cd lib/glm && cmake . && make
+all: dirs shader build
 
 dirs:
 	mkdir -p ./$(BIN)
