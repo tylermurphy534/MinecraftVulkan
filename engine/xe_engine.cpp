@@ -2,6 +2,8 @@
 #include "xe_image.hpp"
 
 #include <chrono> 
+#include <iostream>
+#include <AL/alc.h> 
 #include <AL/alut.h>
 
 namespace xe {
@@ -12,6 +14,7 @@ XeEngine::XeEngine(int width, int height, std::string name) : xeWindow{width, he
   xeCamera{} {
   loadDescriptorPool();
   alutInit(0, NULL);
+  std::cout << "Audio device: " << alcGetString(NULL, ALC_DEFAULT_DEVICE_SPECIFIER) << "\n";
 };
 
 XeEngine::~XeEngine() {

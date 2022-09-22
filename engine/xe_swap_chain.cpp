@@ -11,6 +11,8 @@
 
 namespace xe {
 
+bool XeSwapChain::initialSwapChainCreated = false;
+
 XeSwapChain::XeSwapChain(XeDevice &deviceRef, VkExtent2D extent)
     : device{deviceRef}, windowExtent{extent} {
   init();
@@ -30,6 +32,7 @@ void XeSwapChain::init() {
   createDepthResources();
   createFramebuffers();
   createSyncObjects();
+  initialSwapChainCreated = true;
 }
 
 XeSwapChain::~XeSwapChain() {
@@ -382,19 +385,22 @@ VkPresentModeKHR XeSwapChain::chooseSwapPresentMode(
     const std::vector<VkPresentModeKHR> &availablePresentModes) {
   for (const auto &availablePresentMode : availablePresentModes) {
     if (availablePresentMode == VK_PRESENT_MODE_MAILBOX_KHR) {
-      std::cout << "Present mode: Mailbox" << std::endl;
+      if(!initialSwapChainCreated)
+        std::cout << "Present mode: Mailbox" << std::endl;
       return availablePresentMode;
     }
   }
 
   for (const auto &availablePresentMode : availablePresentModes) {
     if (availablePresentMode == VK_PRESENT_MODE_IMMEDIATE_KHR) {
-      std::cout << "Present mode: Immediate" << std::endl;
+      if(!initialSwapChainCreated)
+        std::cout << "Present mode: Immediate" << std::endl;
       return availablePresentMode;
     }
   }
 
-  std::cout << "Present mode: V-Sync" << std::endl;
+  if(!initialSwapChainCreated)
+    std::cout << "Present mode: V-Sync" << std::endl;
   return VK_PRESENT_MODE_FIFO_KHR;
 }
 
