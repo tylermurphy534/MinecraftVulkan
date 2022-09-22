@@ -19,7 +19,7 @@
 
 namespace app {
 
-FirstApp::FirstApp() : xeEngine{WIDTH, HEIGHT, "Hello, Vulkan!"} {
+FirstApp::FirstApp() : xeEngine{WIDTH, HEIGHT, "Xenon Vulkan Engine"} {
   loadGameObjects();
 }
 
@@ -33,6 +33,7 @@ void FirstApp::run() {
   SimpleRenderer renderer{xeEngine, image.get()};
 
   xe::XeSound sound{"res/sound/when_the_world_ends.wav"};
+  sound.setLooping(true);
   sound.play();
     
   auto viewerObject = xe::XeGameObject::createGameObject();
@@ -51,6 +52,7 @@ void FirstApp::run() {
       renderer.render(gameObjects, xeEngine.getCamera(), image2.get());
       xeEngine.endFrame();
     }
+
   }
 
   xeEngine.close();

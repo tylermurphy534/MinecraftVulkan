@@ -18,7 +18,6 @@ XeSound::XeSound(const std::string& filename) {
   alSource3f(source, AL_VELOCITY, 0, 0, 0);
   alSourcei(source, AL_LOOPING, AL_FALSE);
   alSourcei(source, AL_BUFFER, buffer);
-  alSourcef(source, AL_GAIN, 3.f);
 
 }
 
@@ -57,5 +56,9 @@ void XeSound::setPosition(glm::vec3 position) {
 void XeSound::setLooping(bool looping) {
   alSourcei(source, AL_LOOPING, looping ? 1 : 0);
 };
+
+void XeSound::setVolume(float volume) {
+  alSourcef(source, AL_GAIN, volume);
+}
 
 }

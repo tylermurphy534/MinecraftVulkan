@@ -27,6 +27,7 @@ class XeSound {
 
 		void setPosition(glm::vec3 position);
 		void setLooping(bool looping);
+		void setVolume(float volume);
 
 	private:
 		ALuint source;
