@@ -8,33 +8,22 @@ namespace xe {
 
 XeSound::XeSound(const std::string& filename) {
 
-  ALvoid *data;
-  ALsizei size, freq;
-  ALenum format;
-  ALboolean loop;
-  char *bufferData;
+  // ALvoid *data;
+  // ALsizei size, freq;
+  // ALenum format;
+  // ALboolean loop;
+  // char *bufferData;
 
-  // alutLoadWAVFile(filename.c_str(), &format, &data, &size, &freq, &loop);
+  alutInit(0, NULL);
 
-  // AudioFile<float> file;
-  // file.load(filename);
+  std::cout << std::hex << alutGetError() << "\n";
 
-  // std::vector<uint8_t> data;
-  // file.writePCMToBuffer(data);
-  // auto getALSoundFormat = [](AudioFile<float>& audioFile) {
-	// 	int bitDepth = audioFile.getBitDepth();
-	// 	if (bitDepth == 16)
-	// 		return audioFile.isStereo() ? AL_FORMAT_STEREO16 : AL_FORMAT_MONO16;
-	// 	else if (bitDepth == 8)
-	// 		return audioFile.isStereo() ? AL_FORMAT_STEREO8 : AL_FORMAT_MONO8;
-	// 	else
-	// 		return -1;
-	// };
+  buffer = alutCreateBufferFromFile(filename.c_str());
 
-  // alGenBuffers(1, &buffer);
-  // alBufferData(buffer, getALSoundFormat(file), data.data(), data.size(), file.getSampleRate());
+  std::cout << std::hex << alutGetError() << "\n";
 
   alGenSources(1, &source);
+
   alSourcef(source, AL_GAIN, 1.f);
   alSourcef(source, AL_PITCH, 1.f);
   alSource3f(source, AL_POSITION, 0, 0, 0);
@@ -47,6 +36,7 @@ XeSound::XeSound(const std::string& filename) {
 XeSound::~XeSound() {
   alDeleteSources(1, &source);
   alDeleteBuffers(1, &buffer);
+  alutExit();
 }
 
 void XeSound::play() {
