@@ -12,7 +12,7 @@ CCFLAGS += $(INCFLAGS)
 
 LDFLAGS = -lm
 LDFLAGS += $(INCFLAGS)
-LDFLAGS += lib/glfw/src/libglfw3.a
+LDFLAGS += -lglfw
 LDFLAGS += lib/glm/glm/libglm_static.a
 LDFLAGS += -lopenal
 LDFLAGS += -lalut

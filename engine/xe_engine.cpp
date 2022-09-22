@@ -1,6 +1,8 @@
 #include "xe_engine.hpp"
 #include "xe_image.hpp"
+
 #include <chrono> 
+#include <AL/alut.h>
 
 namespace xe {
 
@@ -9,6 +11,11 @@ XeEngine::XeEngine(int width, int height, std::string name) : xeWindow{width, he
   xeRenderer{xeWindow, xeDevice},
   xeCamera{} {
   loadDescriptorPool();
+  alutInit(0, NULL);
+};
+
+XeEngine::~XeEngine() {
+  alutExit();
 };
 
 void XeEngine::loadDescriptorPool() {

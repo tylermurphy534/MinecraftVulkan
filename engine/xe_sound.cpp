@@ -8,19 +8,7 @@ namespace xe {
 
 XeSound::XeSound(const std::string& filename) {
 
-  // ALvoid *data;
-  // ALsizei size, freq;
-  // ALenum format;
-  // ALboolean loop;
-  // char *bufferData;
-
-  alutInit(0, NULL);
-
-  std::cout << std::hex << alutGetError() << "\n";
-
   buffer = alutCreateBufferFromFile(filename.c_str());
-
-  std::cout << std::hex << alutGetError() << "\n";
 
   alGenSources(1, &source);
 
@@ -30,13 +18,13 @@ XeSound::XeSound(const std::string& filename) {
   alSource3f(source, AL_VELOCITY, 0, 0, 0);
   alSourcei(source, AL_LOOPING, AL_FALSE);
   alSourcei(source, AL_BUFFER, buffer);
+  alSourcef(source, AL_GAIN, 3.f);
 
 }
 
 XeSound::~XeSound() {
   alDeleteSources(1, &source);
   alDeleteBuffers(1, &buffer);
-  alutExit();
 }
 
 void XeSound::play() {
