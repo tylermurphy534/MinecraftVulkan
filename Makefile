@@ -5,18 +5,19 @@ INCFLAGS += -Iengine
 INCFLAGS += -Ilib/glfw/include
 INCFLAGS += -Ilib/glm
 INCFLAGS += -Ilib/stb
-INCFLAGS += -I/usr/include/AL
+INCFLAGS += -Ilib/openal-soft/include
+INCFLAGS += -Ilib/freealut/include
 
 CCFLAGS  = -std=c++17 -O2 -g
 CCFLAGS += $(INCFLAGS)
 
 LDFLAGS = -lm
-LDFLAGS += $(INCFLAGS)
 LDFLAGS += -lglfw
 LDFLAGS += -ldl
 LDFLAGS += -lopenal
 LDFLAGS += -lalut
 LDFLAGS += -lvulkan
+LDFLAGS += $(INCFLAGS)
 
 SRC  = $(shell find src -name "*.cpp")
 SRC += $(shell find engine -name "*.cpp")
