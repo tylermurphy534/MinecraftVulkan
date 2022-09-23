@@ -1,9 +1,5 @@
 #include "xe_sound.hpp"
 
-#include <vector>
-#include <stdexcept>
-#include <iostream>
-
 namespace xe {
 
 XeSound::XeSound(const std::string& filename) {

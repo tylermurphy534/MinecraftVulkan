@@ -4,10 +4,14 @@
 
 #include <vulkan/vulkan.h>
 
+#include <array>
+#include <cstdlib>
+#include <cstring>
+#include <iostream>
+#include <limits>
 #include <memory>
-#include <string>
-#include <vector>
-#include <vulkan/vulkan_core.h>
+#include <set>
+#include <stdexcept>
 
 namespace xe {
 

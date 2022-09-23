@@ -1,7 +1,4 @@
 #include "simple_renderer.hpp"
-#include "xe_render_system.hpp"
-
-#include <iostream>
 
 namespace app {
 

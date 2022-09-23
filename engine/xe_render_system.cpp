@@ -1,19 +1,5 @@
 #include "xe_render_system.hpp"
 
-#include <vulkan/vulkan.h>
-#include "xe_device.hpp"
-#include "xe_pipeline.hpp"
-#include "xe_game_object.hpp"
-#include "xe_swap_chain.hpp"
-#include "xe_renderer.hpp"
-#include "xe_descriptors.hpp"
-#include "xe_engine.hpp"
-
-#include <memory>
-#include <stdexcept>
-
-#include <iostream>
-
 namespace xe {
 
 XeRenderSystem::XeRenderSystem(
