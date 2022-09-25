@@ -1,22 +1,5 @@
 #include "first_app.hpp"
 
-#include "xe_camera.hpp"
-#include "xe_engine.hpp"
-#include "xe_game_object.hpp"
-#include "xe_model.hpp"
-#include "xe_render_system.hpp"
-#include "keyboard_movement_controller.hpp"
-#include "simple_renderer.hpp"
-#include "xe_sound.hpp"
-
-#define GLM_FORCE_RADIANS
-#define GLM_FORCE_DEPTH_ZERO_TO_ONE
-#include <glm/glm.hpp>
-#include <glm/gtc/constants.hpp>
-#include <array>
-
-#include <string>
-
 namespace app {
 
 FirstApp::FirstApp() : xeEngine{WIDTH, HEIGHT, "Xenon Vulkan Engine"} {
@@ -45,7 +28,7 @@ void FirstApp::run() {
 
     float frameTime = xeEngine.getFrameTime();
 
-    cameraController.moveInPlaneXZ(xeEngine.getWindow().getGLFWwindow(), frameTime, viewerObject);
+    cameraController.update(xeEngine.getInput(), viewerObject, frameTime);
     xeEngine.getCamera().setViewYXZ(viewerObject.transform.translation, viewerObject.transform.rotation);
 
     if(xeEngine.beginFrame()) {

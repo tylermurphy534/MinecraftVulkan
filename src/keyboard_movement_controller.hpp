@@ -1,27 +1,31 @@
 #pragma once
 
 #include "xe_game_object.hpp"
-#include "xe_window.hpp"
-#include <GLFW/glfw3.h>
+#include "xe_input.hpp"
+
+#include <glm/common.hpp>
+#include <glm/fwd.hpp>
+#include <glm/geometric.hpp>
+#include <limits>
 
 namespace app {
   class KeyboardMovementController {
 
     public:
       struct KeyMappings {
-        int moveLeft = GLFW_KEY_A;
-        int moveRight = GLFW_KEY_D;
-        int moveForward = GLFW_KEY_W;
-        int moveBackward = GLFW_KEY_S;
-        int moveUp = GLFW_KEY_E;
-        int moveDown = GLFW_KEY_Q;
-        int lookLeft = GLFW_KEY_LEFT;
-        int lookRight = GLFW_KEY_RIGHT;
-        int lookUp = GLFW_KEY_UP;
-        int lookDown = GLFW_KEY_DOWN;
+        int moveLeft = KEY_A;
+        int moveRight = KEY_D;
+        int moveForward = KEY_W;
+        int moveBackward = KEY_S;
+        int moveUp = KEY_E;
+        int moveDown = KEY_Q;
+        int lookLeft = KEY_LEFT;
+        int lookRight = KEY_RIGHT;
+        int lookUp = KEY_UP;
+        int lookDown = KEY_DOWN;
       };
 
-      void moveInPlaneXZ(GLFWwindow* window, float dt, xe::GameObject& gameObject);
+      void update(xe::Input &input, xe::GameObject& gameObject, float dt);
 
       KeyMappings keys{};
       float moveSpeed{3.f};

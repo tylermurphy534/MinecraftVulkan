@@ -1,8 +1,4 @@
 #include "xe_window.hpp"
-#include <GLFW/glfw3.h>
-#include <stdexcept>
-
-#include <stdexcept>
 
 namespace xe {
 

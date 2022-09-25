@@ -1,6 +1,7 @@
 #pragma once
 
 #include "xe_device.hpp"
+#include "xe_model.hpp"
 
 #include <cstdint>
 #include <string>

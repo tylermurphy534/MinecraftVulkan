@@ -1,17 +1,5 @@
 #include "xe_renderer.hpp"
 
-#include "xe_device.hpp"
-#include "xe_game_object.hpp"
-#include "xe_swap_chain.hpp"
-#include "xe_descriptors.hpp"
-#include "xe_window.hpp"
-#include <memory>
-#include <vulkan/vulkan_core.h>
-
-#include <array>
-#include <cassert>
-#include <stdexcept>
-
 namespace xe {
 
 Renderer::Renderer(Window& window, Device& device) : xeWindow{window}, xeDevice{device} {

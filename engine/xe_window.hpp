@@ -2,9 +2,12 @@
 
 #include <vulkan/vulkan_core.h>
 #define GLFW_INCLUDE_VULKAN
-#include <GLFW/glfw3.h>
 
+#include <GLFW/glfw3.h>
+#include <GLFW/glfw3.h>
+#include <stdexcept>
 #include <string>
+
 namespace xe {
     
 class Window {
@@ -33,6 +36,7 @@ class Window {
     
     std::string windowName;
     GLFWwindow *window;
+
 };
  
 }

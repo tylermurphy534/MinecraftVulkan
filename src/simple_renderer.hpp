@@ -1,6 +1,7 @@
 #pragma once
 
 #include "xe_render_system.hpp"
+
 #include <string>
 
 namespace app {

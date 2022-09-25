@@ -1,14 +1,5 @@
 #include "xe_swap_chain.hpp"
 
-#include <array>
-#include <cstdlib>
-#include <cstring>
-#include <iostream>
-#include <limits>
-#include <memory>
-#include <set>
-#include <stdexcept>
-
 namespace xe {
 
 bool SwapChain::initialSwapChainCreated = false;

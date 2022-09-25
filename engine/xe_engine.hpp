@@ -1,14 +1,19 @@
 #pragma once
 
-#include "xe_window.hpp"
 #include "xe_device.hpp"
 #include "xe_renderer.hpp"
 #include "xe_camera.hpp"
 #include "xe_descriptors.hpp"
 #include "xe_image.hpp"
+#include "xe_input.hpp"
+#include "xe_sound.hpp"
 
 #include <chrono> 
 #include <string>
+#include <iostream>
+#include <AL/alc.h> 
+#include <AL/alut.h>
+
 namespace xe {
 
 class Engine {
@@ -22,7 +27,7 @@ class Engine {
     Engine(const Engine&) = delete;
     Engine operator=(const Engine&) = delete;
 
-    Window& getWindow() {return xeWindow;}
+    Input& getInput() {return xeInput;}
     Camera& getCamera() {return xeCamera;}
 
     std::shared_ptr<Model> loadModelFromFile(const std::string &filename);
@@ -44,6 +49,7 @@ class Engine {
     Device xeDevice;
     Renderer xeRenderer;
     Camera xeCamera;
+    Input xeInput;
 
     std::chrono::_V2::system_clock::time_point currentTime;
     float frameTime;

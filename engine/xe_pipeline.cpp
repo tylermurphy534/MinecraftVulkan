@@ -1,7 +1,5 @@
 #include "xe_pipeline.hpp"
 
-#include "xe_model.hpp"
-
 #include <cstdint>
 #include <fstream>
 #include <stdexcept>
