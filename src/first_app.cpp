@@ -27,8 +27,8 @@ FirstApp::~FirstApp() {}
 
 void FirstApp::run() {
 
-  std::shared_ptr<xe::Image> image = xeEngine.loadImage("res/image/texture.png"); 
-  std::shared_ptr<xe::Image> image2 = xeEngine.loadImage("res/image/ltt."); 
+  std::shared_ptr<xe::Image> image = xeEngine.loadImageFromFile("res/image/texture.png"); 
+  std::shared_ptr<xe::Image> image2 = xeEngine.loadImageFromFile("res/image/scaly.png"); 
 
   SimpleRenderer renderer{xeEngine, image.get()};
 

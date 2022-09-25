@@ -11,6 +11,7 @@
 
 #include <memory>
 #include <map>
+#include <vector>
 
 namespace xe {
 
@@ -20,6 +21,21 @@ class RenderSystem {
     class Builder {
       public:
         Builder(Engine &xeEngine, std::string vert, std::string frag) : xeEngine{xeEngine}, vert{vert}, frag{frag} {}
+
+        Builder& addVertexBinding(uint32_t binding, uint32_t dimension, uint32_t offset){
+          if(dimension == 1)
+            attributeDescptions.push_back({binding, 0, VK_FORMAT_R32_SFLOAT, offset});
+          if(dimension == 2)
+            attributeDescptions.push_back({binding, 0, VK_FORMAT_R32G32_SFLOAT, offset});
+          if(dimension == 3)
+            attributeDescptions.push_back({binding, 0, VK_FORMAT_R32G32B32_SFLOAT, offset});
+          return *this;
+        }
+
+        Builder& setVertexSize(uint32_t size) {
+          vertexSize = size;
+          return *this;
+        }
 
         Builder& addPushConstant(uint32_t size) {
           pushCunstantDataSize = size;
@@ -42,7 +58,7 @@ class RenderSystem {
         }
 
         std::unique_ptr<RenderSystem> build() {
-          return std::make_unique<RenderSystem>(xeEngine, std::move(vert), std::move(frag), std::move(uniformBindings), std::move(imageBindings), std::move(pushCunstantDataSize), std::move(cullingEnabled));
+          return std::make_unique<RenderSystem>(xeEngine, std::move(vert), std::move(frag), std::move(uniformBindings), std::move(imageBindings), std::move(pushCunstantDataSize), std::move(cullingEnabled), std::move(attributeDescptions), std::move(vertexSize));
         }
 
       private:
@@ -50,6 +66,9 @@ class RenderSystem {
         std::map<uint32_t, uint32_t> uniformBindings{};
         std::map<uint32_t, Image*> imageBindings{};
         uint32_t pushCunstantDataSize{0};
+
+        std::vector<VkVertexInputAttributeDescription> attributeDescptions{};
+        uint32_t vertexSize;
 
         std::string vert;
         std::string frag;
@@ -66,7 +85,9 @@ class RenderSystem {
       std::map<uint32_t, uint32_t> uniformBindings,
       std::map<uint32_t, Image*> imageBindings,
       uint32_t pushCunstantDataSize,
-      bool cullingEnabled
+      bool cullingEnabled,
+      std::vector<VkVertexInputAttributeDescription> attributeDescptions,
+      uint32_t vertexSize
     );
 
     ~RenderSystem();
@@ -89,7 +110,7 @@ class RenderSystem {
     void createDescriptorSets();
     void updateDescriptorSet(int frameIndex, bool allocate);
     void createPipelineLayout();
-    void createPipeline(VkRenderPass renderPass, std::string vert, std::string frag, bool cullingEnabled);
+    void createPipeline(VkRenderPass renderPass, std::string vert, std::string frag, bool cullingEnabled, std::vector<VkVertexInputAttributeDescription> attributeDescptions, uint32_t vertexSize);
 
     bool boundPipeline{false};
     bool boundDescriptor{false};

@@ -1,5 +1,4 @@
 #include "xe_model.hpp"
-#include "xe_utils.hpp"
 
 #define TINYOBJLOADER_IMPLEMENTATION
 #include "xe_obj_loader.hpp"
@@ -10,22 +9,12 @@
 #include <cassert>
 #include <cstring>
 #include <unordered_map>
-
-namespace std {
-template<>
-struct hash<xe::Model::Vertex> {
-  size_t operator()(xe::Model::Vertex const &vertex) const {
-    size_t seed = 0;
-    xe::hashCombine(seed, vertex.position, vertex.normal, vertex.uv);
-    return seed;
-  }
-};
-}
+#include <iostream>
 
 namespace xe {
 
 Model::Model(Device &device, const Model::Builder &builder) : xeDevice{device} {
-  createVertexBuffers(builder.vertices);
+  createVertexBuffers(builder.vertexData, builder.vertexSize);
   createIndexBuffers(builder.indices);
 }
 
@@ -37,11 +26,10 @@ std::unique_ptr<Model> Model::createModelFromFile(Device &device, const std::str
   return std::make_unique<Model>(device, builder);
 }
 
-void Model::createVertexBuffers(const std::vector<Vertex> &vertices) {
-  vertexCount = static_cast<uint32_t>(vertices.size());
+void Model::createVertexBuffers(const std::vector<float> &vertexData, uint32_t vertexSize) {
+  vertexCount = static_cast<uint32_t>(vertexData.size()) / (vertexSize / 4);
   assert(vertexCount >= 3 && "Vertex count must be atleast 3");
-  VkDeviceSize bufferSize = sizeof(vertices[0]) * vertexCount;
-  uint32_t vertexSize = sizeof(vertices[0]);
+  VkDeviceSize bufferSize = vertexData.size() * 4;
  
   Buffer stagingBuffer {
     xeDevice,
@@ -52,7 +40,7 @@ void Model::createVertexBuffers(const std::vector<Vertex> &vertices) {
   };
 
   stagingBuffer.map();
-  stagingBuffer.writeToBuffer((void *)vertices.data());
+  stagingBuffer.writeToBuffer((void *)vertexData.data());
 
   vertexBuffer = std::make_unique<Buffer>(
     xeDevice,
@@ -65,16 +53,16 @@ void Model::createVertexBuffers(const std::vector<Vertex> &vertices) {
   xeDevice.copyBuffer(stagingBuffer.getBuffer(), vertexBuffer->getBuffer(), bufferSize);
 }
 
-void Model::createIndexBuffers(const std::vector<uint32_t> &indices) {
-  indexCount = static_cast<uint32_t>(indices.size());
+void Model::createIndexBuffers(const std::vector<uint32_t> &indexData) {
+  indexCount = static_cast<uint32_t>(indexData.size());
   hasIndexBuffer = indexCount > 0;
 
   if (!hasIndexBuffer) {
     return;
   }
 
-  VkDeviceSize bufferSize = sizeof(indices[0]) * indexCount;
-  uint32_t indexSize = sizeof(indices[0]);
+  VkDeviceSize bufferSize = sizeof(indexData[0]) * indexCount;
+  uint32_t indexSize = sizeof(indexData[0]);
 
   Buffer stagingBuffer {
     xeDevice,
@@ -85,7 +73,7 @@ void Model::createIndexBuffers(const std::vector<uint32_t> &indices) {
   };
 
   stagingBuffer.map();
-  stagingBuffer.writeToBuffer((void *)indices.data());
+  stagingBuffer.writeToBuffer((void *)indexData.data());
 
   indexBuffer = std::make_unique<Buffer>(
     xeDevice,
@@ -116,25 +104,6 @@ void Model::draw(VkCommandBuffer commandBuffer) {
   }
 }
 
-std::vector<VkVertexInputBindingDescription> Model::Vertex::getBindingDescriptions() {
-  std::vector<VkVertexInputBindingDescription> bindingDescriptions(1);
-  bindingDescriptions[0].binding = 0;
-  bindingDescriptions[0].stride = sizeof(Vertex);
-  bindingDescriptions[0].inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
-  return bindingDescriptions;
-}
-
-std::vector<VkVertexInputAttributeDescription> Model::Vertex::getAttributeDescriptions() {
-  std::vector<VkVertexInputAttributeDescription> attributeDescptions{};
-
-  attributeDescptions.push_back({0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, position)});
-  attributeDescptions.push_back({1, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, color)});
-  attributeDescptions.push_back({2, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, normal)});
-  attributeDescptions.push_back({3, 0, VK_FORMAT_R32G32_SFLOAT, offsetof(Vertex, uv)});
-
-  return attributeDescptions;
-}
-
 void Model::Builder::loadModel(const std::string &filepath) {
   tinyobj::attrib_t attrib;
   std::vector<tinyobj::shape_t> shapes;
@@ -144,50 +113,52 @@ void Model::Builder::loadModel(const std::string &filepath) {
     throw std::runtime_error(warn + err);
   }
 
-  vertices.clear();
+  vertexData.clear();
   indices.clear();
+  vertexSize = 0;
 
-  std::unordered_map<Vertex, uint32_t> uniqueVertices{};
+  bool vertex, color, normal, uvs;
+
   for (const auto &shape : shapes) {
     for (const auto &index : shape.mesh.indices) {
-      Vertex vertex{};
 
       if(index.vertex_index >= 0) {
-        vertex.position = {
-          attrib.vertices[3 * index.vertex_index + 0],
-          attrib.vertices[3 * index.vertex_index + 1],
-          attrib.vertices[3 * index.vertex_index + 2]
-        };
+        vertexData.push_back(attrib.vertices[3 * index.vertex_index + 0]);
+        vertexData.push_back(attrib.vertices[3 * index.vertex_index + 1]);
+        vertexData.push_back(attrib.vertices[3 * index.vertex_index + 2]);
+        vertex = true;
 
-        vertex.color = {
-          attrib.colors[3 * index.vertex_index + 0],
-          attrib.colors[3 * index.vertex_index + 1],
-          attrib.colors[3 * index.vertex_index + 2]
-        };
+        vertexData.push_back(attrib.colors[3 * index.vertex_index + 0]);
+        vertexData.push_back(attrib.colors[3 * index.vertex_index + 1]);
+        vertexData.push_back(attrib.colors[3 * index.vertex_index + 2]);
+        color = true;
       }
 
       if(index.normal_index >= 0) {
-        vertex.normal = {
-          attrib.normals[3 * index.normal_index + 0],
-          attrib.normals[3 * index.normal_index + 1],
-          attrib.normals[3 * index.normal_index + 2]
-        };
+        vertexData.push_back(attrib.normals[3 * index.normal_index + 0]);
+        vertexData.push_back(attrib.normals[3 * index.normal_index + 1]);
+        vertexData.push_back(attrib.normals[3 * index.normal_index + 2]);
+        normal = true;
       }
 
       if(index.texcoord_index >= 0) {
-        vertex.uv = {
-          attrib.texcoords[2 * index.texcoord_index + 0],
-          attrib.texcoords[2 * index.texcoord_index + 1],
-        };
+        vertexData.push_back(attrib.texcoords[2 * index.texcoord_index + 0]);
+        vertexData.push_back(attrib.texcoords[2 * index.texcoord_index + 1]);
+        uvs = true;
       }
 
-      if (uniqueVertices.count(vertex) == 0) {
-        uniqueVertices[vertex] = static_cast<uint32_t>(vertices.size());
-        vertices.push_back(vertex);
-      }
-      indices.push_back(uniqueVertices[vertex]);
     }
   }
+
+  if(vertex)
+    vertexSize += 12;
+  if(color)
+    vertexSize += 12;
+  if(normal)
+    vertexSize += 12;
+  if(uvs)
+    vertexSize += 8;
+
 }
 
 }

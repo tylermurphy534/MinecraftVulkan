@@ -33,7 +33,10 @@ class Pipeline {
       Device &device, 
       const std::string& vertFilepath, 
       const std::string& fragFilepath, 
-      const PipelineConfigInfo& configInfo);
+      const PipelineConfigInfo& configInfo,
+      std::vector<VkVertexInputAttributeDescription> &attributeDescptions,
+      uint32_t vertexSize  
+    );
     ~Pipeline();
 
     Pipeline(const Pipeline&) = delete;
@@ -48,7 +51,10 @@ class Pipeline {
     void createGraphicsPipeline(
       const std::string& vertFilePath, 
       const std::string& fragFilepath, 
-      const PipelineConfigInfo& configInfo);
+      const PipelineConfigInfo& configInfo,
+      std::vector<VkVertexInputAttributeDescription> &attributeDescptions,
+      uint32_t vertexSize
+    );
 
     void createShaderModule(const std::vector<char>& code, VkShaderModule* shaderModule);
 

@@ -35,16 +35,17 @@ std::shared_ptr<Model> Engine::loadModelFromFile(const std::string &filename) {
   return Model::createModelFromFile(xeDevice, filename);
 }
 
-std::shared_ptr<Model> Engine::loadModelFromData(std::vector<Model::Vertex> vertices, std::vector<uint32_t> indices) {
+std::shared_ptr<Model> Engine::loadModelFromData(std::vector<float> vertexData, uint32_t vertexSize, std::vector<uint32_t> indices) {
   Model::Builder builder{};
-  builder.vertices = vertices;
+  builder.vertexData = vertexData;
+  builder.vertexSize = vertexSize;
   if(indices.size() > 0) { 
     builder.indices = indices;
   }
   return std::make_shared<Model>(xeDevice, builder);
 }
 
-std::shared_ptr<Image> Engine::loadImage(const std::string &filename) {
+std::shared_ptr<Image> Engine::loadImageFromFile(const std::string &filename) {
   return std::make_shared<Image>(xeDevice, filename);
 }
 

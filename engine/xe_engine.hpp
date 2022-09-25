@@ -26,8 +26,8 @@ class Engine {
     Camera& getCamera() {return xeCamera;}
 
     std::shared_ptr<Model> loadModelFromFile(const std::string &filename);
-    std::shared_ptr<Model> loadModelFromData(std::vector<Model::Vertex> vertices, std::vector<uint32_t> indices);
-    std::shared_ptr<Image> loadImage(const std::string &filename);
+    std::shared_ptr<Model> loadModelFromData(std::vector<float> vertexData, uint32_t vertexSize, std::vector<uint32_t> indices);
+    std::shared_ptr<Image> loadImageFromFile(const std::string &filename);
     
     bool beginFrame() { return xeRenderer.beginFrame(); }
     void endFrame() { xeRenderer.endFrame(); }

@@ -23,7 +23,9 @@ RenderSystem::RenderSystem(
   std::map<uint32_t, uint32_t> uniformBindings,
   std::map<uint32_t, Image*> imageBindings,
   uint32_t pushCunstantDataSize,
-  bool cullingEnabled
+  bool cullingEnabled,
+  std::vector<VkVertexInputAttributeDescription> attributeDescptions,
+  uint32_t vertexSize
 ) : xeDevice{xeEngine.xeDevice}, 
     xeRenderer{xeEngine.xeRenderer},
     xeDescriptorPool{xeEngine.xeDescriptorPool},
@@ -35,9 +37,8 @@ RenderSystem::RenderSystem(
   createUniformBuffers();
   createDescriptorSets();
   createPipelineLayout();
-  createPipeline(xeRenderer.getSwapChainRenderPass(), vert, frag, cullingEnabled);
+  createPipeline(xeRenderer.getSwapChainRenderPass(), vert, frag, cullingEnabled, attributeDescptions, vertexSize);
 }
-
 
 RenderSystem::~RenderSystem() {
   vkDestroyPipelineLayout(xeDevice.device(), pipelineLayout, nullptr);
@@ -164,7 +165,7 @@ void RenderSystem::createPipelineLayout() {
 }
 
 
-void RenderSystem::createPipeline(VkRenderPass renderPass, std::string vert, std::string frag, bool cullingEnabled) {
+void RenderSystem::createPipeline(VkRenderPass renderPass, std::string vert, std::string frag, bool cullingEnabled, std::vector<VkVertexInputAttributeDescription> attributeDescptions, uint32_t vertexSize) {
   assert(pipelineLayout != nullptr && "Cannot create pipeline before pipeline layout");
 
   PipelineConfigInfo pipelineConfig{};
@@ -178,7 +179,9 @@ void RenderSystem::createPipeline(VkRenderPass renderPass, std::string vert, std
     xeDevice,
     vert,
     frag,
-    pipelineConfig
+    pipelineConfig,
+    attributeDescptions,
+    vertexSize
   );
 }
 

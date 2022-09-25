@@ -16,9 +16,11 @@ namespace xe {
       Device &device, 
       const std::string& vertFilepath, 
       const std::string& fragFilepath, 
-      const PipelineConfigInfo& configInfo) 
-      : xeDevice{device} {
-    createGraphicsPipeline(vertFilepath, fragFilepath, configInfo);
+      const PipelineConfigInfo& configInfo,
+      std::vector<VkVertexInputAttributeDescription> &attributeDescptions,
+      uint32_t vertexSize
+      ) : xeDevice{device} {
+    createGraphicsPipeline(vertFilepath, fragFilepath, configInfo, attributeDescptions, vertexSize);
   }
 
   Pipeline::~Pipeline() {
@@ -48,7 +50,10 @@ namespace xe {
   void Pipeline::createGraphicsPipeline(
     const std::string& vertFilePath, 
     const std::string& fragFilepath,
-    const PipelineConfigInfo& configInfo) {
+    const PipelineConfigInfo& configInfo,
+    std::vector<VkVertexInputAttributeDescription> &attributeDescptions,
+    uint32_t vertexSize
+  ) {
 
     assert(
       configInfo.pipelineLayout != VK_NULL_HANDLE &&
@@ -78,8 +83,13 @@ namespace xe {
     shaderStages[1].pNext = nullptr;
     shaderStages[1].pSpecializationInfo = nullptr;
 
-    auto bindingDescriptions = Model::Vertex::getBindingDescriptions();
-    auto attributeDescptions = Model::Vertex::getAttributeDescriptions();
+    VkVertexInputBindingDescription bindingDescription;
+    bindingDescription.binding = 0;
+    bindingDescription.stride = vertexSize;
+    bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+
+    std::vector<VkVertexInputBindingDescription> bindingDescriptions{bindingDescription};
+    
     VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
     vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
     vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescptions.size());

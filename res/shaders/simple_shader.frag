@@ -10,6 +10,11 @@ layout (binding = 0) uniform GlobalUbo {
   vec3 directionToLight;
 } ubo;
 
+layout (binding = 2) uniform Deez {
+  mat4 projectionViewMatrix;
+  vec3 directionToLight;
+} deez;
+
 layout (binding = 1) uniform sampler2D texSampler;
 
 layout(push_constant) uniform Push {
