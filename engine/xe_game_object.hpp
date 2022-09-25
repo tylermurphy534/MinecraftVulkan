@@ -21,28 +21,28 @@ struct TransformComponent {
 
 };
 
-class XeGameObject {
+class GameObject {
   public:
     using id_t = unsigned int;
 
-    static XeGameObject createGameObject() {
+    static GameObject createGameObject() {
       static id_t currentId = 0;
-      return XeGameObject(currentId++);
+      return GameObject(currentId++);
     }
 
-    XeGameObject(const XeGameObject &) = delete;
-    XeGameObject &operator=(const XeGameObject &) = delete;
-    XeGameObject(XeGameObject&&) = default;
-    XeGameObject &operator=(XeGameObject &&) = default;
+    GameObject(const GameObject &) = delete;
+    GameObject &operator=(const GameObject &) = delete;
+    GameObject(GameObject&&) = default;
+    GameObject &operator=(GameObject &&) = default;
 
     id_t getId() { return id; }
 
-    std::shared_ptr<XeModel> model{};
+    std::shared_ptr<Model> model{};
     glm::vec3 color{};
     TransformComponent transform;
 
   private:
-    XeGameObject(id_t objId) : id{objId} {}
+    GameObject(id_t objId) : id{objId} {}
 
     id_t id;
 };

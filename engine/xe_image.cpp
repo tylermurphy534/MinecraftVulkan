@@ -10,18 +10,18 @@
 
 namespace xe {
 
-XeImage::XeImage(XeDevice &xeDevice, const std::string &filename) : xeDevice{xeDevice} {
+Image::Image(Device &xeDevice, const std::string &filename) : xeDevice{xeDevice} {
   createTextureImage(filename);
   createTextureImageView();
 }
 
-XeImage::~XeImage() {
+Image::~Image() {
   vkDestroyImage(xeDevice.device(), textureImage, nullptr);
   vkFreeMemory(xeDevice.device(), textureImageMemory, nullptr);
   vkDestroyImageView(xeDevice.device(), textureImageView, nullptr);
 }
 
-void XeImage::createTextureImage(const std::string &filename) {
+void Image::createTextureImage(const std::string &filename) {
   int texWidth, texHeight, texChannels;
   stbi_uc* pixels = stbi_load(filename.c_str(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
   VkDeviceSize imageSize = texWidth * texHeight * 4;
@@ -59,7 +59,7 @@ void XeImage::createTextureImage(const std::string &filename) {
 
 }
 
-void XeImage::createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory) {
+void Image::createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory) {
     
     VkImageCreateInfo imageInfo{};
     imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
@@ -95,7 +95,7 @@ void XeImage::createImage(uint32_t width, uint32_t height, VkFormat format, VkIm
     vkBindImageMemory(xeDevice.device(), image, imageMemory, 0);
 }
 
-void XeImage::transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout) {
+void Image::transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout) {
     VkCommandBuffer commandBuffer = xeDevice.beginSingleTimeCommands();
 
     VkImageMemoryBarrier barrier{};
@@ -142,7 +142,7 @@ void XeImage::transitionImageLayout(VkImage image, VkFormat format, VkImageLayou
     xeDevice.endSingleTimeCommands(commandBuffer);
 }
 
-void XeImage::copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height) {
+void Image::copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height) {
   VkCommandBuffer commandBuffer = xeDevice.beginSingleTimeCommands();
   
   VkBufferImageCopy region{};
@@ -165,7 +165,7 @@ void XeImage::copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, 
   xeDevice.endSingleTimeCommands(commandBuffer);
 }
 
-void XeImage::createTextureImageView() {
+void Image::createTextureImageView() {
     VkImageViewCreateInfo viewInfo{};
     viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
     viewInfo.image = textureImage;

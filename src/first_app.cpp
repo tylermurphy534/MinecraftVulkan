@@ -27,16 +27,16 @@ FirstApp::~FirstApp() {}
 
 void FirstApp::run() {
 
-  std::shared_ptr<xe::XeImage> image = xeEngine.loadImage("res/image/texture.png"); 
-  std::shared_ptr<xe::XeImage> image2 = xeEngine.loadImage("res/image/scaly.png"); 
+  std::shared_ptr<xe::Image> image = xeEngine.loadImage("res/image/texture.png"); 
+  std::shared_ptr<xe::Image> image2 = xeEngine.loadImage("res/image/ltt."); 
 
   SimpleRenderer renderer{xeEngine, image.get()};
 
-  xe::XeSound sound{"res/sound/when_the_world_ends.wav"};
+  xe::Sound sound{"res/sound/when_the_world_ends.wav"};
   sound.setLooping(true);
   sound.play();
     
-  auto viewerObject = xe::XeGameObject::createGameObject();
+  auto viewerObject = xe::GameObject::createGameObject();
   viewerObject.transform.translation = {-7.f, 3.f, -7.f};
   viewerObject.transform.rotation.y = glm::radians(45.f);
   KeyboardMovementController cameraController{};
@@ -60,15 +60,15 @@ void FirstApp::run() {
 }
 
 void FirstApp::loadGameObjects() {
-  std::shared_ptr<xe::XeModel> xeModel = xeEngine.loadModelFromFile("res/models/stanford-dragon.obj");
+  std::shared_ptr<xe::Model> xeModel = xeEngine.loadModelFromFile("res/models/stanford-dragon.obj");
 
-  auto dragon = xe::XeGameObject::createGameObject();
+  auto dragon = xe::GameObject::createGameObject();
   dragon.model = xeModel;
   dragon.transform.translation = {.0f, .0f, 2.5f};
   dragon.transform.scale = {.5f, .5f, .5f};
   gameObjects.push_back(std::move(dragon));
 
-  auto dragon2 = xe::XeGameObject::createGameObject();
+  auto dragon2 = xe::GameObject::createGameObject();
   dragon2.model = xeModel;
   dragon2.transform.translation = {5.0f, .0f, -1.5f};
   dragon2.transform.rotation.y = glm::radians(90.f);

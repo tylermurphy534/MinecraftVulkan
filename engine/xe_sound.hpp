@@ -11,12 +11,12 @@
 
 namespace xe {
 
-class XeSound {
+class Sound {
 
 	public:
 
-		XeSound(const std::string& filename);
-		~XeSound();
+		Sound(const std::string& filename);
+		~Sound();
 
 		void play();
 		void stop();

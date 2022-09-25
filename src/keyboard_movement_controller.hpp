@@ -21,7 +21,7 @@ namespace app {
         int lookDown = GLFW_KEY_DOWN;
       };
 
-      void moveInPlaneXZ(GLFWwindow* window, float dt, xe::XeGameObject& gameObject);
+      void moveInPlaneXZ(GLFWwindow* window, float dt, xe::GameObject& gameObject);
 
       KeyMappings keys{};
       float moveSpeed{3.f};

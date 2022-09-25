@@ -12,8 +12,8 @@
 
 namespace xe {
 
-  XePipeline::XePipeline(
-      XeDevice &device, 
+  Pipeline::Pipeline(
+      Device &device, 
       const std::string& vertFilepath, 
       const std::string& fragFilepath, 
       const PipelineConfigInfo& configInfo) 
@@ -21,13 +21,13 @@ namespace xe {
     createGraphicsPipeline(vertFilepath, fragFilepath, configInfo);
   }
 
-  XePipeline::~XePipeline() {
+  Pipeline::~Pipeline() {
     vkDestroyShaderModule(xeDevice.device(), vertShaderModule, nullptr);
     vkDestroyShaderModule(xeDevice.device(), fragShaderModule, nullptr);
     vkDestroyPipeline(xeDevice.device(), graphicsPipeline, nullptr);
   }
 
-  std::vector<char> XePipeline::readFile(const std::string& filepath) {
+  std::vector<char> Pipeline::readFile(const std::string& filepath) {
 
     std::ifstream file{filepath, std::ios::ate | std::ios::binary};
 
@@ -45,7 +45,7 @@ namespace xe {
     return buffer;
   };
 
-  void XePipeline::createGraphicsPipeline(
+  void Pipeline::createGraphicsPipeline(
     const std::string& vertFilePath, 
     const std::string& fragFilepath,
     const PipelineConfigInfo& configInfo) {
@@ -78,8 +78,8 @@ namespace xe {
     shaderStages[1].pNext = nullptr;
     shaderStages[1].pSpecializationInfo = nullptr;
 
-    auto bindingDescriptions = XeModel::Vertex::getBindingDescriptions();
-    auto attributeDescptions = XeModel::Vertex::getAttributeDescriptions();
+    auto bindingDescriptions = Model::Vertex::getBindingDescriptions();
+    auto attributeDescptions = Model::Vertex::getAttributeDescriptions();
     VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
     vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
     vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescptions.size());
@@ -112,7 +112,7 @@ namespace xe {
     }
   }
 
-  void XePipeline::createShaderModule(const std::vector<char>& code, VkShaderModule* shaderModule) {
+  void Pipeline::createShaderModule(const std::vector<char>& code, VkShaderModule* shaderModule) {
     VkShaderModuleCreateInfo createInfo{};
     createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
     createInfo.codeSize = code.size();
@@ -124,11 +124,11 @@ namespace xe {
 
   }
 
-  void XePipeline::bind(VkCommandBuffer commandBuffer) {
+  void Pipeline::bind(VkCommandBuffer commandBuffer) {
     vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
   }
 
-  void XePipeline::defaultPipelineConfigInfo(PipelineConfigInfo& configInfo) {
+  void Pipeline::defaultPipelineConfigInfo(PipelineConfigInfo& configInfo) {
     
     configInfo.inputAssemblyInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
     configInfo.inputAssemblyInfo.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;

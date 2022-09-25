@@ -19,17 +19,17 @@ class SimpleRenderer {
 
   public:
 
-    SimpleRenderer(xe::XeEngine &xeEngine, xe::XeImage *xeImage);
+    SimpleRenderer(xe::Engine &xeEngine, xe::Image *xeImage);
 
     ~SimpleRenderer() {};
 
     SimpleRenderer(const SimpleRenderer&) = delete;
     SimpleRenderer operator=(const SimpleRenderer&) = delete;
 
-    void render(std::vector<xe::XeGameObject> &gameObjects, xe::XeCamera &xeCamera, xe::XeImage *xeImage);
+    void render(std::vector<xe::GameObject> &gameObjects, xe::Camera &xeCamera, xe::Image *xeImage);
 
   private:
-    std::unique_ptr<xe::XeRenderSystem> xeRenderSystem;
+    std::unique_ptr<xe::RenderSystem> xeRenderSystem;
 
 };
 

@@ -7,7 +7,7 @@
 
 namespace xe {
 
-class XeCamera {
+class Camera {
   public:
 
     void setOrthographicProjection(

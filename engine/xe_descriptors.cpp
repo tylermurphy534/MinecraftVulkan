@@ -5,7 +5,7 @@
 
 namespace xe {
 
-XeDescriptorSetLayout::Builder &XeDescriptorSetLayout::Builder::addBinding(
+DescriptorSetLayout::Builder &DescriptorSetLayout::Builder::addBinding(
     uint32_t binding,
     VkDescriptorType descriptorType,
     VkShaderStageFlags stageFlags,
@@ -22,12 +22,12 @@ XeDescriptorSetLayout::Builder &XeDescriptorSetLayout::Builder::addBinding(
   return *this;
 }
 
-std::unique_ptr<XeDescriptorSetLayout> XeDescriptorSetLayout::Builder::build() const {
-  return std::make_unique<XeDescriptorSetLayout>(xeDevice, bindings);
+std::unique_ptr<DescriptorSetLayout> DescriptorSetLayout::Builder::build() const {
+  return std::make_unique<DescriptorSetLayout>(xeDevice, bindings);
 }
 
-XeDescriptorSetLayout::XeDescriptorSetLayout(
-    XeDevice &xeDevice, std::unordered_map<uint32_t, VkDescriptorSetLayoutBinding> bindings)
+DescriptorSetLayout::DescriptorSetLayout(
+    Device &xeDevice, std::unordered_map<uint32_t, VkDescriptorSetLayoutBinding> bindings)
     : xeDevice{xeDevice}, bindings{bindings} {
   std::vector<VkDescriptorSetLayoutBinding> setLayoutBindings{};
   for (auto kv : bindings) {
@@ -48,32 +48,32 @@ XeDescriptorSetLayout::XeDescriptorSetLayout(
   }
 }
 
-XeDescriptorSetLayout::~XeDescriptorSetLayout() {
+DescriptorSetLayout::~DescriptorSetLayout() {
   vkDestroyDescriptorSetLayout(xeDevice.device(), descriptorSetLayout, nullptr);
 }
 
-XeDescriptorPool::Builder &XeDescriptorPool::Builder::addPoolSize(
+DescriptorPool::Builder &DescriptorPool::Builder::addPoolSize(
     VkDescriptorType descriptorType, uint32_t count) {
   poolSizes.push_back({descriptorType, count});
   return *this;
 }
 
-XeDescriptorPool::Builder &XeDescriptorPool::Builder::setPoolFlags(
+DescriptorPool::Builder &DescriptorPool::Builder::setPoolFlags(
     VkDescriptorPoolCreateFlags flags) {
   poolFlags = flags;
   return *this;
 }
-XeDescriptorPool::Builder &XeDescriptorPool::Builder::setMaxSets(uint32_t count) {
+DescriptorPool::Builder &DescriptorPool::Builder::setMaxSets(uint32_t count) {
   maxSets = count;
   return *this;
 }
 
-std::unique_ptr<XeDescriptorPool> XeDescriptorPool::Builder::build() const {
-  return std::make_unique<XeDescriptorPool>(xeDevice, maxSets, poolFlags, poolSizes);
+std::unique_ptr<DescriptorPool> DescriptorPool::Builder::build() const {
+  return std::make_unique<DescriptorPool>(xeDevice, maxSets, poolFlags, poolSizes);
 }
 
-XeDescriptorPool::XeDescriptorPool(
-    XeDevice &xeDevice,
+DescriptorPool::DescriptorPool(
+    Device &xeDevice,
     uint32_t maxSets,
     VkDescriptorPoolCreateFlags poolFlags,
     const std::vector<VkDescriptorPoolSize> &poolSizes)
@@ -91,11 +91,11 @@ XeDescriptorPool::XeDescriptorPool(
   }
 }
 
-XeDescriptorPool::~XeDescriptorPool() {
+DescriptorPool::~DescriptorPool() {
   vkDestroyDescriptorPool(xeDevice.device(), descriptorPool, nullptr);
 }
 
-bool XeDescriptorPool::allocateDescriptor(
+bool DescriptorPool::allocateDescriptor(
     const VkDescriptorSetLayout descriptorSetLayout, VkDescriptorSet &descriptor) const {
   VkDescriptorSetAllocateInfo allocInfo{};
   allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
@@ -109,7 +109,7 @@ bool XeDescriptorPool::allocateDescriptor(
   return true;
 }
 
-void XeDescriptorPool::freeDescriptors(std::vector<VkDescriptorSet> &descriptors) const {
+void DescriptorPool::freeDescriptors(std::vector<VkDescriptorSet> &descriptors) const {
   vkFreeDescriptorSets(
       xeDevice.device(),
       descriptorPool,
@@ -117,14 +117,14 @@ void XeDescriptorPool::freeDescriptors(std::vector<VkDescriptorSet> &descriptors
       descriptors.data());
 }
 
-void XeDescriptorPool::resetPool() {
+void DescriptorPool::resetPool() {
   vkResetDescriptorPool(xeDevice.device(), descriptorPool, 0);
 }
 
-XeDescriptorWriter::XeDescriptorWriter(XeDescriptorSetLayout &setLayout, XeDescriptorPool &pool)
+DescriptorWriter::DescriptorWriter(DescriptorSetLayout &setLayout, DescriptorPool &pool)
     : setLayout{setLayout}, pool{pool} {}
 
-XeDescriptorWriter &XeDescriptorWriter::writeBuffer(
+DescriptorWriter &DescriptorWriter::writeBuffer(
     uint32_t binding, VkDescriptorBufferInfo *bufferInfo) {
   assert(setLayout.bindings.count(binding) == 1 && "Layout does not contain specified binding");
 
@@ -145,7 +145,7 @@ XeDescriptorWriter &XeDescriptorWriter::writeBuffer(
   return *this;
 }
 
-XeDescriptorWriter &XeDescriptorWriter::writeImage(
+DescriptorWriter &DescriptorWriter::writeImage(
     uint32_t binding, VkDescriptorImageInfo *imageInfo) {
   assert(setLayout.bindings.count(binding) == 1 && "Layout does not contain specified binding");
 
@@ -166,7 +166,7 @@ XeDescriptorWriter &XeDescriptorWriter::writeImage(
   return *this;
 }
 
-bool XeDescriptorWriter::build(VkDescriptorSet &set) {
+bool DescriptorWriter::build(VkDescriptorSet &set) {
   bool success = pool.allocateDescriptor(setLayout.getDescriptorSetLayout(), set);
   if (!success) {
     return false;
@@ -175,7 +175,7 @@ bool XeDescriptorWriter::build(VkDescriptorSet &set) {
   return true;
 }
 
-void XeDescriptorWriter::overwrite(VkDescriptorSet &set) {
+void DescriptorWriter::overwrite(VkDescriptorSet &set) {
   for (auto &write : writes) {
     write.dstSet = set;
   }

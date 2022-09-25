@@ -14,14 +14,14 @@
 
 namespace xe {
 
-XeRenderer::XeRenderer(XeWindow& window, XeDevice& device) : xeWindow{window}, xeDevice{device} {
+Renderer::Renderer(Window& window, Device& device) : xeWindow{window}, xeDevice{device} {
   recreateSwapChain();
   createCommandBuffers();
 }
 
-XeRenderer::~XeRenderer() { freeCommandBuffers(); }
+Renderer::~Renderer() { freeCommandBuffers(); }
 
-void XeRenderer::recreateSwapChain() { 
+void Renderer::recreateSwapChain() { 
   auto extent = xeWindow.getExtent();
   while (extent.width == 0 || extent.height == 0) {
     extent = xeWindow.getExtent();
@@ -31,10 +31,10 @@ void XeRenderer::recreateSwapChain() {
   vkDeviceWaitIdle(xeDevice.device());
   
   if(xeSwapChain == nullptr) {
-    xeSwapChain = std::make_unique<XeSwapChain>(xeDevice, extent);
+    xeSwapChain = std::make_unique<SwapChain>(xeDevice, extent);
   } else {
-    std::shared_ptr<XeSwapChain> oldSwapChain = std::move(xeSwapChain);
-    xeSwapChain = std::make_unique<XeSwapChain>(xeDevice, extent, oldSwapChain);
+    std::shared_ptr<SwapChain> oldSwapChain = std::move(xeSwapChain);
+    xeSwapChain = std::make_unique<SwapChain>(xeDevice, extent, oldSwapChain);
 
     if(!oldSwapChain->compareSwapFormats(*xeSwapChain.get())) {
       throw std::runtime_error("Swap chain image (or depth) format has changed");
@@ -45,9 +45,9 @@ void XeRenderer::recreateSwapChain() {
   // we'll come back to this in just a moment
 }
 
-void XeRenderer::createCommandBuffers() {
+void Renderer::createCommandBuffers() {
   
-  commandBuffers.resize(XeSwapChain::MAX_FRAMES_IN_FLIGHT);
+  commandBuffers.resize(SwapChain::MAX_FRAMES_IN_FLIGHT);
 
   VkCommandBufferAllocateInfo allocInfo{};
   allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -61,7 +61,7 @@ void XeRenderer::createCommandBuffers() {
 
 }
 
-void XeRenderer::freeCommandBuffers() {
+void Renderer::freeCommandBuffers() {
   vkFreeCommandBuffers(
     xeDevice.device(), 
     xeDevice.getCommandPool(), 
@@ -70,7 +70,7 @@ void XeRenderer::freeCommandBuffers() {
     commandBuffers.clear();
 }
 
-VkCommandBuffer XeRenderer::beginFrame() {
+VkCommandBuffer Renderer::beginFrame() {
   assert(!isFrameStarted && "Can't acll beingFrame while already in progress");
 
   auto result = xeSwapChain->acquireNextImage(&currentImageIndex);
@@ -97,7 +97,7 @@ VkCommandBuffer XeRenderer::beginFrame() {
   return commandBuffer;
 }
 
-void XeRenderer::endFrame() {
+void Renderer::endFrame() {
   assert(isFrameStarted && "Can't call endFrame while frame is not in progress");
   auto commandBuffer = getCurrentCommandBuffer();
   if(vkEndCommandBuffer(commandBuffer) != VK_SUCCESS) {
@@ -111,10 +111,10 @@ void XeRenderer::endFrame() {
   }
 
   isFrameStarted = false;
-  currentFrameIndex = (currentFrameIndex + 1) % XeSwapChain::MAX_FRAMES_IN_FLIGHT;
+  currentFrameIndex = (currentFrameIndex + 1) % SwapChain::MAX_FRAMES_IN_FLIGHT;
 }
 
-void XeRenderer::beginSwapChainRenderPass(VkCommandBuffer commandBuffer){
+void Renderer::beginSwapChainRenderPass(VkCommandBuffer commandBuffer){
   assert(isFrameStarted && "Can't call beginSwapChainRenderPass while frame is not in progress");
   assert(commandBuffer == getCurrentCommandBuffer() && "Can't begin render pass on command buffer from a different frame");
 
@@ -146,7 +146,7 @@ void XeRenderer::beginSwapChainRenderPass(VkCommandBuffer commandBuffer){
   vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 }
 
-void XeRenderer::endSwapChainRenderPass(VkCommandBuffer commandBuffer){
+void Renderer::endSwapChainRenderPass(VkCommandBuffer commandBuffer){
   assert(isFrameStarted && "Can't call endSwapChainRenderPass while frame is not in progress");
   assert(commandBuffer == getCurrentCommandBuffer() && "Can't end render pass on command buffer from a different frame");
 

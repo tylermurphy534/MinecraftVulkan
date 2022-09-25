@@ -9,66 +9,66 @@
 
 namespace xe {
 
-class XeDescriptorSetLayout {
+class DescriptorSetLayout {
  public:
   class Builder {
    public:
-    Builder(XeDevice &xeDevice) : xeDevice{xeDevice} {}
+    Builder(Device &xeDevice) : xeDevice{xeDevice} {}
 
     Builder &addBinding(
         uint32_t binding,
         VkDescriptorType descriptorType,
         VkShaderStageFlags stageFlags,
         VkSampler *sampler);
-    std::unique_ptr<XeDescriptorSetLayout> build() const;
+    std::unique_ptr<DescriptorSetLayout> build() const;
 
    private:
-    XeDevice &xeDevice;
+    Device &xeDevice;
     std::unordered_map<uint32_t, VkDescriptorSetLayoutBinding> bindings{};
   };
 
-  XeDescriptorSetLayout(
-      XeDevice &xeDevice, std::unordered_map<uint32_t, VkDescriptorSetLayoutBinding> bindings);
-  ~XeDescriptorSetLayout();
-  XeDescriptorSetLayout(const XeDescriptorSetLayout &) = delete;
-  XeDescriptorSetLayout &operator=(const XeDescriptorSetLayout &) = delete;
+  DescriptorSetLayout(
+      Device &xeDevice, std::unordered_map<uint32_t, VkDescriptorSetLayoutBinding> bindings);
+  ~DescriptorSetLayout();
+  DescriptorSetLayout(const DescriptorSetLayout &) = delete;
+  DescriptorSetLayout &operator=(const DescriptorSetLayout &) = delete;
 
   VkDescriptorSetLayout getDescriptorSetLayout() const { return descriptorSetLayout; }
 
  private:
-  XeDevice &xeDevice;
+  Device &xeDevice;
   VkDescriptorSetLayout descriptorSetLayout;
   std::unordered_map<uint32_t, VkDescriptorSetLayoutBinding> bindings;
 
-  friend class XeDescriptorWriter;
+  friend class DescriptorWriter;
 };
 
-class XeDescriptorPool {
+class DescriptorPool {
  public:
   class Builder {
    public:
-    Builder(XeDevice &xeDevice) : xeDevice{xeDevice} {}
+    Builder(Device &xeDevice) : xeDevice{xeDevice} {}
 
     Builder &addPoolSize(VkDescriptorType descriptorType, uint32_t count);
     Builder &setPoolFlags(VkDescriptorPoolCreateFlags flags);
     Builder &setMaxSets(uint32_t count);
-    std::unique_ptr<XeDescriptorPool> build() const;
+    std::unique_ptr<DescriptorPool> build() const;
 
    private:
-    XeDevice &xeDevice;
+    Device &xeDevice;
     std::vector<VkDescriptorPoolSize> poolSizes{};
     uint32_t maxSets = 1000;
     VkDescriptorPoolCreateFlags poolFlags = 0;
   };
 
-  XeDescriptorPool(
-      XeDevice &xeDevice,
+  DescriptorPool(
+      Device &xeDevice,
       uint32_t maxSets,
       VkDescriptorPoolCreateFlags poolFlags,
       const std::vector<VkDescriptorPoolSize> &poolSizes);
-  ~XeDescriptorPool();
-  XeDescriptorPool(const XeDescriptorPool &) = delete;
-  XeDescriptorPool &operator=(const XeDescriptorPool &) = delete;
+  ~DescriptorPool();
+  DescriptorPool(const DescriptorPool &) = delete;
+  DescriptorPool &operator=(const DescriptorPool &) = delete;
 
   bool allocateDescriptor(
       const VkDescriptorSetLayout descriptorSetLayout, VkDescriptorSet &descriptor) const;
@@ -78,25 +78,25 @@ class XeDescriptorPool {
   void resetPool();
 
  private:
-  XeDevice &xeDevice;
+  Device &xeDevice;
   VkDescriptorPool descriptorPool;
 
-  friend class XeDescriptorWriter;
+  friend class DescriptorWriter;
 };
 
-class XeDescriptorWriter {
+class DescriptorWriter {
  public:
-  XeDescriptorWriter(XeDescriptorSetLayout &setLayout, XeDescriptorPool &pool);
+  DescriptorWriter(DescriptorSetLayout &setLayout, DescriptorPool &pool);
 
-  XeDescriptorWriter &writeBuffer(uint32_t binding, VkDescriptorBufferInfo *bufferInfo);
-  XeDescriptorWriter &writeImage(uint32_t binding, VkDescriptorImageInfo *imageInfo);
+  DescriptorWriter &writeBuffer(uint32_t binding, VkDescriptorBufferInfo *bufferInfo);
+  DescriptorWriter &writeImage(uint32_t binding, VkDescriptorImageInfo *imageInfo);
 
   bool build(VkDescriptorSet &set);
   void overwrite(VkDescriptorSet &set);
 
  private:
-  XeDescriptorSetLayout &setLayout;
-  XeDescriptorPool &pool;
+  DescriptorSetLayout &setLayout;
+  DescriptorPool &pool;
   std::vector<VkWriteDescriptorSet> writes;
 };
 

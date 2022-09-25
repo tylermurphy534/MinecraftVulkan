@@ -21,7 +21,7 @@ struct QueueFamilyIndices {
   bool isComplete() { return graphicsFamilyHasValue && presentFamilyHasValue; }
 };
 
-class XeDevice {
+class Device {
  public:
 #ifdef NDEBUG
   const bool enableValidationLayers = false;
@@ -29,13 +29,13 @@ class XeDevice {
   const bool enableValidationLayers = true;
 #endif
 
-  XeDevice(XeWindow &window);
-  ~XeDevice();
+  Device(Window &window);
+  ~Device();
 
-  XeDevice(const XeDevice &) = delete;
-  void operator=(const XeDevice &) = delete;
-  XeDevice(XeDevice &&) = delete;
-  XeDevice &operator=(XeDevice &&) = delete;
+  Device(const Device &) = delete;
+  void operator=(const Device &) = delete;
+  Device(Device &&) = delete;
+  Device &operator=(Device &&) = delete;
 
   VkCommandPool getCommandPool() { return commandPool; }
   VkDevice device() { return device_; }
@@ -90,7 +90,7 @@ class XeDevice {
   VkInstance instance;
   VkDebugUtilsMessengerEXT debugMessenger;
   VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
-  XeWindow &window;
+  Window &window;
   VkCommandPool commandPool;
 
   VkDevice device_;

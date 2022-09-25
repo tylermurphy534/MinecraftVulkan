@@ -6,16 +6,16 @@
 
 namespace xe {
 
-  XeWindow::XeWindow(int w, int h, std::string name) : width{w}, height{h}, windowName{name} {
+  Window::Window(int w, int h, std::string name) : width{w}, height{h}, windowName{name} {
     initWindow();
   }
 
-  XeWindow::~XeWindow() {
+  Window::~Window() {
     glfwDestroyWindow(window);
     glfwTerminate();
   }
 
-  void XeWindow::initWindow() {
+  void Window::initWindow() {
     glfwInit();
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
     glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
@@ -25,14 +25,14 @@ namespace xe {
     glfwSetFramebufferSizeCallback(window, framebufferResizeCallback);
   }
 
-  void XeWindow::createWindowSurface(VkInstance instance, VkSurfaceKHR *surface){
+  void Window::createWindowSurface(VkInstance instance, VkSurfaceKHR *surface){
     if (glfwCreateWindowSurface(instance, window, nullptr, surface) != VK_SUCCESS) {
       throw std::runtime_error("failed to create window surface");
     }
   }
 
-  void XeWindow::framebufferResizeCallback(GLFWwindow *window, int width, int height){
-    auto xeWindow = reinterpret_cast<XeWindow *>(glfwGetWindowUserPointer(window));
+  void Window::framebufferResizeCallback(GLFWwindow *window, int width, int height){
+    auto xeWindow = reinterpret_cast<Window *>(glfwGetWindowUserPointer(window));
     xeWindow->frameBufferResized = true;
     xeWindow->width = width;
     xeWindow->height = height;

@@ -10,14 +10,14 @@
 #include <cassert>
 
 namespace xe {
-class XeRenderer {
+class Renderer {
   public:
 
-    XeRenderer(XeWindow &window, XeDevice &device);
-    ~XeRenderer();
+    Renderer(Window &window, Device &device);
+    ~Renderer();
 
-    XeRenderer(const XeRenderer &) = delete;
-    XeRenderer operator=(const XeRenderer &) = delete;
+    Renderer(const Renderer &) = delete;
+    Renderer operator=(const Renderer &) = delete;
 
     VkRenderPass getSwapChainRenderPass() const { return xeSwapChain->getRenderPass(); }
     float getAspectRatio() const { return xeSwapChain->extentAspectRatio(); }
@@ -43,9 +43,9 @@ class XeRenderer {
     void freeCommandBuffers();
     void recreateSwapChain();
 
-    XeWindow& xeWindow;
-    XeDevice& xeDevice;
-    std::unique_ptr<XeSwapChain> xeSwapChain;
+    Window& xeWindow;
+    Device& xeDevice;
+    std::unique_ptr<SwapChain> xeSwapChain;
     std::vector<VkCommandBuffer> commandBuffers;
 
     uint32_t currentImageIndex;

@@ -11,23 +11,23 @@
 #include <string>
 namespace xe {
 
-class XeEngine {
+class Engine {
 
   public:
 
-    XeEngine(int width, int height, std::string name);
+    Engine(int width, int height, std::string name);
 
-    ~XeEngine();
+    ~Engine();
 
-    XeEngine(const XeEngine&) = delete;
-    XeEngine operator=(const XeEngine&) = delete;
+    Engine(const Engine&) = delete;
+    Engine operator=(const Engine&) = delete;
 
-    XeWindow& getWindow() {return xeWindow;}
-    XeCamera& getCamera() {return xeCamera;}
+    Window& getWindow() {return xeWindow;}
+    Camera& getCamera() {return xeCamera;}
 
-    std::shared_ptr<XeModel> loadModelFromFile(const std::string &filename);
-    std::shared_ptr<XeModel> loadModelFromData(std::vector<XeModel::Vertex> vertices, std::vector<uint32_t> indices);
-    std::shared_ptr<XeImage> loadImage(const std::string &filename);
+    std::shared_ptr<Model> loadModelFromFile(const std::string &filename);
+    std::shared_ptr<Model> loadModelFromData(std::vector<Model::Vertex> vertices, std::vector<uint32_t> indices);
+    std::shared_ptr<Image> loadImage(const std::string &filename);
     
     bool beginFrame() { return xeRenderer.beginFrame(); }
     void endFrame() { xeRenderer.endFrame(); }
@@ -40,19 +40,19 @@ class XeEngine {
 
     void loadDescriptorPool();
 
-    XeWindow xeWindow;
-    XeDevice xeDevice;
-    XeRenderer xeRenderer;
-    XeCamera xeCamera;
+    Window xeWindow;
+    Device xeDevice;
+    Renderer xeRenderer;
+    Camera xeCamera;
 
     std::chrono::_V2::system_clock::time_point currentTime;
     float frameTime;
 
     float FOV = 50.f;
 
-    std::unique_ptr<XeDescriptorPool> xeDescriptorPool;
+    std::unique_ptr<DescriptorPool> xeDescriptorPool;
 
-    friend class XeRenderSystem;
+    friend class RenderSystem;
 };
 
 }

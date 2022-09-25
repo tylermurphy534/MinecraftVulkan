@@ -7,13 +7,13 @@
 #include <string>
 namespace xe {
     
-class XeWindow {
+class Window {
   public:
-    XeWindow(int w, int h, std::string name);
-    ~XeWindow();
+    Window(int w, int h, std::string name);
+    ~Window();
 
-    XeWindow(const XeWindow &) = delete;
-    XeWindow &operator=(const XeWindow &);
+    Window(const Window &) = delete;
+    Window &operator=(const Window &);
 
     bool shouldClose() { return glfwWindowShouldClose(window); }
     VkExtent2D getExtent() { return { static_cast<uint32_t>(width), static_cast<uint32_t>(height)}; }

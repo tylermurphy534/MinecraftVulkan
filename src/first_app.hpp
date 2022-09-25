@@ -26,8 +26,8 @@ class FirstApp {
 
     void loadGameObjects();
 
-    xe::XeEngine xeEngine;
+    xe::Engine xeEngine;
 
-    std::vector<xe::XeGameObject> gameObjects;
+    std::vector<xe::GameObject> gameObjects;
 };
 }

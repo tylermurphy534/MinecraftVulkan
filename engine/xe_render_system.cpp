@@ -16,12 +16,12 @@
 
 namespace xe {
 
-XeRenderSystem::XeRenderSystem(
-  XeEngine &xeEngine,
+RenderSystem::RenderSystem(
+  Engine &xeEngine,
   std::string vert,
   std::string frag,
   std::map<uint32_t, uint32_t> uniformBindings,
-  std::map<uint32_t, XeImage*> imageBindings,
+  std::map<uint32_t, Image*> imageBindings,
   uint32_t pushCunstantDataSize,
   bool cullingEnabled
 ) : xeDevice{xeEngine.xeDevice}, 
@@ -39,12 +39,12 @@ XeRenderSystem::XeRenderSystem(
 }
 
 
-XeRenderSystem::~XeRenderSystem() {
+RenderSystem::~RenderSystem() {
   vkDestroyPipelineLayout(xeDevice.device(), pipelineLayout, nullptr);
   vkDestroySampler(xeDevice.device(), textureSampler, nullptr);
 };
 
-void XeRenderSystem::createTextureSampler() {
+void RenderSystem::createTextureSampler() {
   VkSamplerCreateInfo samplerInfo{};
   samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
   samplerInfo.magFilter = VK_FILTER_LINEAR;
@@ -67,8 +67,8 @@ void XeRenderSystem::createTextureSampler() {
   }
 }
 
-void XeRenderSystem::createDescriptorSetLayout() {
-  XeDescriptorSetLayout::Builder builder{xeDevice};
+void RenderSystem::createDescriptorSetLayout() {
+  DescriptorSetLayout::Builder builder{xeDevice};
   
   for ( const auto &[binding, size]: uniformBindings) {
     builder.addBinding(binding, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT, nullptr);
@@ -81,14 +81,14 @@ void XeRenderSystem::createDescriptorSetLayout() {
   xeDescriptorSetLayout = builder.build();
 }
 
-void XeRenderSystem::createUniformBuffers() {
+void RenderSystem::createUniformBuffers() {
   for ( const auto &[binding, bufferSize]: uniformBindings) {
-    uboBuffers[binding] = std::vector<std::unique_ptr<XeBuffer>>(XeSwapChain::MAX_FRAMES_IN_FLIGHT);
+    uboBuffers[binding] = std::vector<std::unique_ptr<Buffer>>(SwapChain::MAX_FRAMES_IN_FLIGHT);
     for (int i = 0; i < uboBuffers[binding].size(); i++) {
-      uboBuffers[binding][i] = std::make_unique<XeBuffer>(
+      uboBuffers[binding][i] = std::make_unique<Buffer>(
         xeDevice,
         bufferSize,
-        XeSwapChain::MAX_FRAMES_IN_FLIGHT,
+        SwapChain::MAX_FRAMES_IN_FLIGHT,
         VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
         VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
       uboBuffers[binding][i]->map();
@@ -96,18 +96,18 @@ void XeRenderSystem::createUniformBuffers() {
   }
 }
 
-void XeRenderSystem::createDescriptorSets() {
+void RenderSystem::createDescriptorSets() {
 
-  descriptorSets = std::vector<VkDescriptorSet>(XeSwapChain::MAX_FRAMES_IN_FLIGHT);
+  descriptorSets = std::vector<VkDescriptorSet>(SwapChain::MAX_FRAMES_IN_FLIGHT);
   for (int i = 0; i < descriptorSets.size(); i++) {
     updateDescriptorSet(i, true);
   }
 
 }
 
-void XeRenderSystem::updateDescriptorSet(int frameIndex, bool allocate) {
+void RenderSystem::updateDescriptorSet(int frameIndex, bool allocate) {
 
-  XeDescriptorWriter writer{*xeDescriptorSetLayout, *xeDescriptorPool};
+  DescriptorWriter writer{*xeDescriptorSetLayout, *xeDescriptorPool};
 
   std::vector<VkDescriptorBufferInfo> bufferInfos{};
 
@@ -135,7 +135,7 @@ void XeRenderSystem::updateDescriptorSet(int frameIndex, bool allocate) {
 }
 
 
-void XeRenderSystem::createPipelineLayout() {
+void RenderSystem::createPipelineLayout() {
 
   VkPushConstantRange pushConstantRange;
   pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
@@ -164,17 +164,17 @@ void XeRenderSystem::createPipelineLayout() {
 }
 
 
-void XeRenderSystem::createPipeline(VkRenderPass renderPass, std::string vert, std::string frag, bool cullingEnabled) {
+void RenderSystem::createPipeline(VkRenderPass renderPass, std::string vert, std::string frag, bool cullingEnabled) {
   assert(pipelineLayout != nullptr && "Cannot create pipeline before pipeline layout");
 
   PipelineConfigInfo pipelineConfig{};
-  XePipeline::defaultPipelineConfigInfo(pipelineConfig);
+  Pipeline::defaultPipelineConfigInfo(pipelineConfig);
   if (cullingEnabled) {
     pipelineConfig.rasterizationInfo.cullMode = VK_CULL_MODE_BACK_BIT;
   }
   pipelineConfig.renderPass = renderPass;
   pipelineConfig.pipelineLayout = pipelineLayout;
-  xePipeline = std::make_unique<XePipeline>(
+  xePipeline = std::make_unique<Pipeline>(
     xeDevice,
     vert,
     frag,
@@ -182,7 +182,7 @@ void XeRenderSystem::createPipeline(VkRenderPass renderPass, std::string vert, s
   );
 }
 
-void XeRenderSystem::start() {
+void RenderSystem::start() {
   xeRenderer.beginSwapChainRenderPass(xeRenderer.getCurrentCommandBuffer());
   xePipeline->bind(xeRenderer.getCurrentCommandBuffer());
   if(descriptorSets.size() > 0) {
@@ -200,7 +200,7 @@ void XeRenderSystem::start() {
   }
 }
 
-void XeRenderSystem::loadPushConstant(void *pushConstantData) {
+void RenderSystem::loadPushConstant(void *pushConstantData) {
   vkCmdPushConstants(
         xeRenderer.getCurrentCommandBuffer(), 
         pipelineLayout, 
@@ -210,23 +210,23 @@ void XeRenderSystem::loadPushConstant(void *pushConstantData) {
         pushConstantData);
 }
 
-void XeRenderSystem::loadUniformObject(uint32_t binding, void *uniformBufferData) {
+void RenderSystem::loadUniformObject(uint32_t binding, void *uniformBufferData) {
   uboBuffers[binding][xeRenderer.getFrameIndex()]->writeToBuffer(uniformBufferData);
 }
 
-void XeRenderSystem::loadTexture(uint32_t binding, XeImage *image) {
+void RenderSystem::loadTexture(uint32_t binding, Image *image) {
   imageBindings[binding] = image;
   updateDescriptorSet(xeRenderer.getFrameIndex(), false);
 }
 
-void XeRenderSystem::render(XeGameObject &gameObject) {
+void RenderSystem::render(GameObject &gameObject) {
 
   gameObject.model->bind(xeRenderer.getCurrentCommandBuffer());
   gameObject.model->draw(xeRenderer.getCurrentCommandBuffer());
 
 }
 
-void XeRenderSystem::stop() {
+void RenderSystem::stop() {
   xeRenderer.endSwapChainRenderPass(xeRenderer.getCurrentCommandBuffer());
 }
 

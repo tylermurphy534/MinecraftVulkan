@@ -4,19 +4,19 @@
 
 namespace xe {
 
-class XeBuffer {
+class Buffer {
  public:
-  XeBuffer(
-      XeDevice& device,
+  Buffer(
+      Device& device,
       VkDeviceSize instanceSize,
       uint32_t instanceCount,
       VkBufferUsageFlags usageFlags,
       VkMemoryPropertyFlags memoryPropertyFlags,
       VkDeviceSize minOffsetAlignment = 1);
-  ~XeBuffer();
+  ~Buffer();
 
-  XeBuffer(const XeBuffer&) = delete;
-  XeBuffer& operator=(const XeBuffer&) = delete;
+  Buffer(const Buffer&) = delete;
+  Buffer& operator=(const Buffer&) = delete;
 
   VkResult map(VkDeviceSize size = VK_WHOLE_SIZE, VkDeviceSize offset = 0);
   void unmap();
@@ -43,7 +43,7 @@ class XeBuffer {
  private:
   static VkDeviceSize getAlignment(VkDeviceSize instanceSize, VkDeviceSize minOffsetAlignment);
 
-  XeDevice& xeDevice;
+  Device& xeDevice;
   void* mapped = nullptr;
   VkBuffer buffer = VK_NULL_HANDLE;
   VkDeviceMemory memory = VK_NULL_HANDLE;

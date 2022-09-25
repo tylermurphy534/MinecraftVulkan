@@ -14,12 +14,12 @@
 
 namespace xe {
 
-class XeRenderSystem {
+class RenderSystem {
   public:
   
     class Builder {
       public:
-        Builder(XeEngine &xeEngine, std::string vert, std::string frag) : xeEngine{xeEngine}, vert{vert}, frag{frag} {}
+        Builder(Engine &xeEngine, std::string vert, std::string frag) : xeEngine{xeEngine}, vert{vert}, frag{frag} {}
 
         Builder& addPushConstant(uint32_t size) {
           pushCunstantDataSize = size;
@@ -31,7 +31,7 @@ class XeRenderSystem {
           return *this;
         }
 
-        Builder& addTextureBinding(uint32_t binding, XeImage* image) {
+        Builder& addTextureBinding(uint32_t binding, Image* image) {
           imageBindings[binding] = image;
           return *this;
         }
@@ -41,14 +41,14 @@ class XeRenderSystem {
           return *this;
         }
 
-        std::unique_ptr<XeRenderSystem> build() {
-          return std::make_unique<XeRenderSystem>(xeEngine, std::move(vert), std::move(frag), std::move(uniformBindings), std::move(imageBindings), std::move(pushCunstantDataSize), std::move(cullingEnabled));
+        std::unique_ptr<RenderSystem> build() {
+          return std::make_unique<RenderSystem>(xeEngine, std::move(vert), std::move(frag), std::move(uniformBindings), std::move(imageBindings), std::move(pushCunstantDataSize), std::move(cullingEnabled));
         }
 
       private:
 
         std::map<uint32_t, uint32_t> uniformBindings{};
-        std::map<uint32_t, XeImage*> imageBindings{};
+        std::map<uint32_t, Image*> imageBindings{};
         uint32_t pushCunstantDataSize{0};
 
         std::string vert;
@@ -56,29 +56,29 @@ class XeRenderSystem {
 
         bool cullingEnabled{false};
 
-        XeEngine &xeEngine;
+        Engine &xeEngine;
     };
 
-    XeRenderSystem(
-      XeEngine &xeEngine,
+    RenderSystem(
+      Engine &xeEngine,
       std::string vert,
       std::string frag,
       std::map<uint32_t, uint32_t> uniformBindings,
-      std::map<uint32_t, XeImage*> imageBindings,
+      std::map<uint32_t, Image*> imageBindings,
       uint32_t pushCunstantDataSize,
       bool cullingEnabled
     );
 
-    ~XeRenderSystem();
+    ~RenderSystem();
 
-    XeRenderSystem(const XeRenderSystem &) = delete;
-    XeRenderSystem operator=(const XeRenderSystem &) = delete;
+    RenderSystem(const RenderSystem &) = delete;
+    RenderSystem operator=(const RenderSystem &) = delete;
 
     void start();
     void loadPushConstant(void *pushConstantData);
     void loadUniformObject(uint32_t binding, void *uniformBufferData);
-    void loadTexture(uint32_t binding, XeImage *image);
-    void render(XeGameObject &gameObject);
+    void loadTexture(uint32_t binding, Image *image);
+    void render(GameObject &gameObject);
     void stop();
 
   private:
@@ -95,12 +95,12 @@ class XeRenderSystem {
     bool boundDescriptor{false};
 
   
-    XeDevice& xeDevice;
-    XeRenderer& xeRenderer;
+    Device& xeDevice;
+    Renderer& xeRenderer;
 
-    std::map<uint32_t, std::vector<std::unique_ptr<XeBuffer>>> uboBuffers{};
+    std::map<uint32_t, std::vector<std::unique_ptr<Buffer>>> uboBuffers{};
     std::map<uint32_t, uint32_t> uniformBindings;
-    std::map<uint32_t, XeImage*> imageBindings;
+    std::map<uint32_t, Image*> imageBindings;
     std::vector<VkDescriptorSet> descriptorSets;
 
     uint32_t pushCunstantDataSize;
@@ -108,9 +108,9 @@ class XeRenderSystem {
     VkSampler textureSampler;
     
     VkPipelineLayout pipelineLayout;
-    std::unique_ptr<XePipeline> xePipeline;
-    std::unique_ptr<XeDescriptorPool> &xeDescriptorPool;
-    std::unique_ptr<XeDescriptorSetLayout> xeDescriptorSetLayout;
+    std::unique_ptr<Pipeline> xePipeline;
+    std::unique_ptr<DescriptorPool> &xeDescriptorPool;
+    std::unique_ptr<DescriptorSetLayout> xeDescriptorSetLayout;
 
 };
 

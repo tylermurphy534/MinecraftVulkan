@@ -5,8 +5,8 @@
 
 namespace app {
 
-SimpleRenderer::SimpleRenderer(xe::XeEngine &xeEngine, xe::XeImage *xeImage) {
-  xeRenderSystem = xe::XeRenderSystem::Builder(xeEngine, "res/shaders/simple_shader.vert.spv", "res/shaders/simple_shader.frag.spv")
+SimpleRenderer::SimpleRenderer(xe::Engine &xeEngine, xe::Image *xeImage) {
+  xeRenderSystem = xe::RenderSystem::Builder(xeEngine, "res/shaders/simple_shader.vert.spv", "res/shaders/simple_shader.frag.spv")
     .addPushConstant(sizeof(PushConstant))
     .addUniformBinding(0, sizeof(UniformBuffer))
     .addTextureBinding(1, xeImage)
@@ -14,7 +14,7 @@ SimpleRenderer::SimpleRenderer(xe::XeEngine &xeEngine, xe::XeImage *xeImage) {
     .build();
 }
 
-void SimpleRenderer::render(std::vector<xe::XeGameObject> &gameObjects, xe::XeCamera &xeCamera, xe::XeImage *xeImage) {
+void SimpleRenderer::render(std::vector<xe::GameObject> &gameObjects, xe::Camera &xeCamera, xe::Image *xeImage) {
 
   xeRenderSystem->loadTexture(1, xeImage);
 

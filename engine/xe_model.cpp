@@ -13,8 +13,8 @@
 
 namespace std {
 template<>
-struct hash<xe::XeModel::Vertex> {
-  size_t operator()(xe::XeModel::Vertex const &vertex) const {
+struct hash<xe::Model::Vertex> {
+  size_t operator()(xe::Model::Vertex const &vertex) const {
     size_t seed = 0;
     xe::hashCombine(seed, vertex.position, vertex.normal, vertex.uv);
     return seed;
@@ -24,26 +24,26 @@ struct hash<xe::XeModel::Vertex> {
 
 namespace xe {
 
-XeModel::XeModel(XeDevice &device, const XeModel::Builder &builder) : xeDevice{device} {
+Model::Model(Device &device, const Model::Builder &builder) : xeDevice{device} {
   createVertexBuffers(builder.vertices);
   createIndexBuffers(builder.indices);
 }
 
-XeModel::~XeModel() {}
+Model::~Model() {}
 
-std::unique_ptr<XeModel> XeModel::createModelFromFile(XeDevice &device, const std::string &filepath) {
+std::unique_ptr<Model> Model::createModelFromFile(Device &device, const std::string &filepath) {
   Builder builder{};
   builder.loadModel(filepath);
-  return std::make_unique<XeModel>(device, builder);
+  return std::make_unique<Model>(device, builder);
 }
 
-void XeModel::createVertexBuffers(const std::vector<Vertex> &vertices) {
+void Model::createVertexBuffers(const std::vector<Vertex> &vertices) {
   vertexCount = static_cast<uint32_t>(vertices.size());
   assert(vertexCount >= 3 && "Vertex count must be atleast 3");
   VkDeviceSize bufferSize = sizeof(vertices[0]) * vertexCount;
   uint32_t vertexSize = sizeof(vertices[0]);
  
-  XeBuffer stagingBuffer {
+  Buffer stagingBuffer {
     xeDevice,
     vertexSize,
     vertexCount,
@@ -54,7 +54,7 @@ void XeModel::createVertexBuffers(const std::vector<Vertex> &vertices) {
   stagingBuffer.map();
   stagingBuffer.writeToBuffer((void *)vertices.data());
 
-  vertexBuffer = std::make_unique<XeBuffer>(
+  vertexBuffer = std::make_unique<Buffer>(
     xeDevice,
     vertexSize,
     vertexCount,
@@ -65,7 +65,7 @@ void XeModel::createVertexBuffers(const std::vector<Vertex> &vertices) {
   xeDevice.copyBuffer(stagingBuffer.getBuffer(), vertexBuffer->getBuffer(), bufferSize);
 }
 
-void XeModel::createIndexBuffers(const std::vector<uint32_t> &indices) {
+void Model::createIndexBuffers(const std::vector<uint32_t> &indices) {
   indexCount = static_cast<uint32_t>(indices.size());
   hasIndexBuffer = indexCount > 0;
 
@@ -76,7 +76,7 @@ void XeModel::createIndexBuffers(const std::vector<uint32_t> &indices) {
   VkDeviceSize bufferSize = sizeof(indices[0]) * indexCount;
   uint32_t indexSize = sizeof(indices[0]);
 
-  XeBuffer stagingBuffer {
+  Buffer stagingBuffer {
     xeDevice,
     indexSize,
     indexCount,
@@ -87,7 +87,7 @@ void XeModel::createIndexBuffers(const std::vector<uint32_t> &indices) {
   stagingBuffer.map();
   stagingBuffer.writeToBuffer((void *)indices.data());
 
-  indexBuffer = std::make_unique<XeBuffer>(
+  indexBuffer = std::make_unique<Buffer>(
     xeDevice,
     indexSize,
     indexCount,
@@ -98,7 +98,7 @@ void XeModel::createIndexBuffers(const std::vector<uint32_t> &indices) {
   xeDevice.copyBuffer(stagingBuffer.getBuffer(), indexBuffer->getBuffer(), bufferSize);
 }
 
-void XeModel::bind(VkCommandBuffer commandBuffer) {
+void Model::bind(VkCommandBuffer commandBuffer) {
   VkBuffer buffers[] = {vertexBuffer->getBuffer()};
   VkDeviceSize offsets[] = {0};
   vkCmdBindVertexBuffers(commandBuffer, 0, 1, buffers, offsets);
@@ -108,7 +108,7 @@ void XeModel::bind(VkCommandBuffer commandBuffer) {
   }
 }
 
-void XeModel::draw(VkCommandBuffer commandBuffer) {
+void Model::draw(VkCommandBuffer commandBuffer) {
   if (hasIndexBuffer) {
     vkCmdDrawIndexed(commandBuffer, indexCount, 1, 0, 0, 0);
   } else {
@@ -116,7 +116,7 @@ void XeModel::draw(VkCommandBuffer commandBuffer) {
   }
 }
 
-std::vector<VkVertexInputBindingDescription> XeModel::Vertex::getBindingDescriptions() {
+std::vector<VkVertexInputBindingDescription> Model::Vertex::getBindingDescriptions() {
   std::vector<VkVertexInputBindingDescription> bindingDescriptions(1);
   bindingDescriptions[0].binding = 0;
   bindingDescriptions[0].stride = sizeof(Vertex);
@@ -124,7 +124,7 @@ std::vector<VkVertexInputBindingDescription> XeModel::Vertex::getBindingDescript
   return bindingDescriptions;
 }
 
-std::vector<VkVertexInputAttributeDescription> XeModel::Vertex::getAttributeDescriptions() {
+std::vector<VkVertexInputAttributeDescription> Model::Vertex::getAttributeDescriptions() {
   std::vector<VkVertexInputAttributeDescription> attributeDescptions{};
 
   attributeDescptions.push_back({0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, position)});
@@ -135,7 +135,7 @@ std::vector<VkVertexInputAttributeDescription> XeModel::Vertex::getAttributeDesc
   return attributeDescptions;
 }
 
-void XeModel::Builder::loadModel(const std::string &filepath) {
+void Model::Builder::loadModel(const std::string &filepath) {
   tinyobj::attrib_t attrib;
   std::vector<tinyobj::shape_t> shapes;
   std::vector<tinyobj::material_t> materials;

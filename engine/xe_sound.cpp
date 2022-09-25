@@ -6,7 +6,7 @@
 
 namespace xe {
 
-XeSound::XeSound(const std::string& filename) {
+Sound::Sound(const std::string& filename) {
 
   buffer = alutCreateBufferFromFile(filename.c_str());
 
@@ -21,43 +21,43 @@ XeSound::XeSound(const std::string& filename) {
 
 }
 
-XeSound::~XeSound() {
+Sound::~Sound() {
   alDeleteSources(1, &source);
   alDeleteBuffers(1, &buffer);
 }
 
-void XeSound::play() {
+void Sound::play() {
   stop();
   alSourcePlay(source);
 };
 
-void XeSound::stop() {
+void Sound::stop() {
   alSourceStop(source);
 };
 
-void XeSound::pause() {
+void Sound::pause() {
   alSourcePause(source);
 };
 
-void XeSound::resume() {
+void Sound::resume() {
   alSourcePlay(source);
 };
 
-bool XeSound::isPlaying() {
+bool Sound::isPlaying() {
   ALint playing;
   alGetSourcei(source, AL_SOURCE_STATE, &playing);
   return playing == AL_PLAYING;
 };
 
-void XeSound::setPosition(glm::vec3 position) {
+void Sound::setPosition(glm::vec3 position) {
   alSource3f(source, AL_POSITION, position.x, position.y, position.z);
 };
 
-void XeSound::setLooping(bool looping) {
+void Sound::setLooping(bool looping) {
   alSourcei(source, AL_LOOPING, looping ? 1 : 0);
 };
 
-void XeSound::setVolume(float volume) {
+void Sound::setVolume(float volume) {
   alSourcef(source, AL_GAIN, volume);
 }
 

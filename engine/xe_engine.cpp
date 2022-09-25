@@ -8,46 +8,47 @@
 
 namespace xe {
 
-XeEngine::XeEngine(int width, int height, std::string name) : xeWindow{width, height, name}, 
+Engine::Engine(int width, int height, std::string name) : xeWindow{width, height, name}, 
   xeDevice{xeWindow}, 
   xeRenderer{xeWindow, xeDevice},
   xeCamera{} {
   loadDescriptorPool();
   alutInit(0, NULL);
+
   std::cout << "Audio device: " << alcGetString(NULL, ALC_DEFAULT_DEVICE_SPECIFIER) << "\n";
 };
 
-XeEngine::~XeEngine() {
+Engine::~Engine() {
   alutExit();
 };
 
-void XeEngine::loadDescriptorPool() {
-  xeDescriptorPool = XeDescriptorPool::Builder(xeDevice)
-    .setMaxSets(XeSwapChain::MAX_FRAMES_IN_FLIGHT)
-    .addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, XeSwapChain::MAX_FRAMES_IN_FLIGHT)
-    .addPoolSize(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, XeSwapChain::MAX_FRAMES_IN_FLIGHT)
-    .addPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, XeSwapChain::MAX_FRAMES_IN_FLIGHT)
+void Engine::loadDescriptorPool() {
+  xeDescriptorPool = DescriptorPool::Builder(xeDevice)
+    .setMaxSets(SwapChain::MAX_FRAMES_IN_FLIGHT)
+    .addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, SwapChain::MAX_FRAMES_IN_FLIGHT)
+    .addPoolSize(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, SwapChain::MAX_FRAMES_IN_FLIGHT)
+    .addPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, SwapChain::MAX_FRAMES_IN_FLIGHT)
     .build();
 }
 
-std::shared_ptr<XeModel> XeEngine::loadModelFromFile(const std::string &filename) {
-  return XeModel::createModelFromFile(xeDevice, filename);
+std::shared_ptr<Model> Engine::loadModelFromFile(const std::string &filename) {
+  return Model::createModelFromFile(xeDevice, filename);
 }
 
-std::shared_ptr<XeModel> XeEngine::loadModelFromData(std::vector<XeModel::Vertex> vertices, std::vector<uint32_t> indices) {
-  XeModel::Builder builder{};
+std::shared_ptr<Model> Engine::loadModelFromData(std::vector<Model::Vertex> vertices, std::vector<uint32_t> indices) {
+  Model::Builder builder{};
   builder.vertices = vertices;
   if(indices.size() > 0) { 
     builder.indices = indices;
   }
-  return std::make_shared<XeModel>(xeDevice, builder);
+  return std::make_shared<Model>(xeDevice, builder);
 }
 
-std::shared_ptr<XeImage> XeEngine::loadImage(const std::string &filename) {
-  return std::make_shared<XeImage>(xeDevice, filename);
+std::shared_ptr<Image> Engine::loadImage(const std::string &filename) {
+  return std::make_shared<Image>(xeDevice, filename);
 }
 
-bool XeEngine::poll() {
+bool Engine::poll() {
   glfwPollEvents();
   auto newTime = std::chrono::high_resolution_clock::now();
   frameTime = std::chrono::duration<float, std::chrono::seconds::period>(newTime - currentTime).count();

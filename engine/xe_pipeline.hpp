@@ -27,17 +27,17 @@ struct PipelineConfigInfo {
   uint32_t subpass = 0;
 };
 
-class XePipeline {
+class Pipeline {
   public:
-    XePipeline(
-      XeDevice &device, 
+    Pipeline(
+      Device &device, 
       const std::string& vertFilepath, 
       const std::string& fragFilepath, 
       const PipelineConfigInfo& configInfo);
-    ~XePipeline();
+    ~Pipeline();
 
-    XePipeline(const XePipeline&) = delete;
-    XePipeline operator=(const XePipeline&) = delete;
+    Pipeline(const Pipeline&) = delete;
+    Pipeline operator=(const Pipeline&) = delete;
 
     void bind(VkCommandBuffer commandBuffer);
     static void defaultPipelineConfigInfo(PipelineConfigInfo& configInfo);
@@ -52,7 +52,7 @@ class XePipeline {
 
     void createShaderModule(const std::vector<char>& code, VkShaderModule* shaderModule);
 
-    XeDevice& xeDevice;
+    Device& xeDevice;
     VkPipeline graphicsPipeline;
     VkShaderModule vertShaderModule;
     VkShaderModule fragShaderModule;

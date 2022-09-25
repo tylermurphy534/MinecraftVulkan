@@ -11,7 +11,7 @@
 
 namespace xe {
 
-class XeModel {
+class Model {
   public:
 
     struct Vertex {
@@ -35,13 +35,13 @@ class XeModel {
       void loadModel(const std::string &filepath);
     };
 
-    XeModel(XeDevice &device, const XeModel::Builder &builder);
-    ~XeModel();
+    Model(Device &device, const Model::Builder &builder);
+    ~Model();
 
-    XeModel(const XeModel &) = delete;
-    XeModel operator=(const XeModel &) = delete;
+    Model(const Model &) = delete;
+    Model operator=(const Model &) = delete;
 
-    static std::unique_ptr<XeModel> createModelFromFile(XeDevice &device, const std::string &filepath);
+    static std::unique_ptr<Model> createModelFromFile(Device &device, const std::string &filepath);
     
     void bind(VkCommandBuffer commandBuffer);
     void draw(VkCommandBuffer commandBuffer);
@@ -50,13 +50,13 @@ class XeModel {
     void createVertexBuffers(const std::vector<Vertex> &vertices);
     void createIndexBuffers(const std::vector<uint32_t> &indices);
 
-    XeDevice &xeDevice;
+    Device &xeDevice;
 
-    std::unique_ptr<XeBuffer> vertexBuffer;
+    std::unique_ptr<Buffer> vertexBuffer;
     uint32_t vertexCount;
 
     bool hasIndexBuffer = false;
-    std::unique_ptr<XeBuffer> indexBuffer;
+    std::unique_ptr<Buffer> indexBuffer;
     uint32_t indexCount;
 };
 

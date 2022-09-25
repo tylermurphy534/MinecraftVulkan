@@ -11,16 +11,16 @@
 
 namespace xe {
 
-class XeSwapChain {
+class SwapChain {
  public:
   static constexpr int MAX_FRAMES_IN_FLIGHT = 2;
 
-  XeSwapChain(XeDevice &deviceRef, VkExtent2D windowExtent);
-  XeSwapChain(XeDevice &deviceRef, VkExtent2D windowExtent, std::shared_ptr<XeSwapChain> previous);
-  ~XeSwapChain();
+  SwapChain(Device &deviceRef, VkExtent2D windowExtent);
+  SwapChain(Device &deviceRef, VkExtent2D windowExtent, std::shared_ptr<SwapChain> previous);
+  ~SwapChain();
 
-  XeSwapChain(const XeSwapChain &) = delete;
-  XeSwapChain operator=(const XeSwapChain &) = delete;
+  SwapChain(const SwapChain &) = delete;
+  SwapChain operator=(const SwapChain &) = delete;
 
   VkFramebuffer getFrameBuffer(int index) { return swapChainFramebuffers[index]; }
   VkRenderPass getRenderPass() { return renderPass; }
@@ -39,7 +39,7 @@ class XeSwapChain {
   VkResult acquireNextImage(uint32_t *imageIndex);
   VkResult submitCommandBuffers(const VkCommandBuffer *buffers, uint32_t *imageIndex);
 
-  bool compareSwapFormats(const XeSwapChain& swapChain) const {
+  bool compareSwapFormats(const SwapChain& swapChain) const {
     return swapChain.swapChainDepthFormat == swapChainDepthFormat &&
            swapChain.swapChainImageFormat == swapChainImageFormat;
   }
@@ -72,11 +72,11 @@ class XeSwapChain {
   std::vector<VkImage> swapChainImages;
   std::vector<VkImageView> swapChainImageViews;
 
-  XeDevice &device;
+  Device &device;
   VkExtent2D windowExtent;
 
   VkSwapchainKHR swapChain;
-  std::shared_ptr<XeSwapChain> oldSwapChain;
+  std::shared_ptr<SwapChain> oldSwapChain;
 
   std::vector<VkSemaphore> imageAvailableSemaphores;
   std::vector<VkSemaphore> renderFinishedSemaphores;

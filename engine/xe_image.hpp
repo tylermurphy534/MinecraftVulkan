@@ -6,15 +6,15 @@
 
 namespace xe {
   
-class XeImage {
+class Image {
 
   public:
   
-    XeImage(XeDevice &xeDevice, const std::string &filename);
-    ~XeImage();
+    Image(Device &xeDevice, const std::string &filename);
+    ~Image();
 
-    XeImage(const XeImage&) = delete;
-    XeImage operator=(const XeImage&) = delete;
+    Image(const Image&) = delete;
+    Image operator=(const Image&) = delete;
 
   private:
 
@@ -24,13 +24,13 @@ class XeImage {
     void copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
     void createTextureImageView();
 
-    XeDevice &xeDevice;
+    Device &xeDevice;
 
     VkImage textureImage;
     VkImageView textureImageView;
     VkDeviceMemory textureImageMemory;
 
-    friend class XeRenderSystem;
+    friend class RenderSystem;
 
 };
 
