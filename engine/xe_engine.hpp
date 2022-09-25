@@ -29,6 +29,7 @@ class Engine {
 
     Input& getInput() {return xeInput;}
     Camera& getCamera() {return xeCamera;}
+    Device& getDevice() {return xeDevice;}
 
     std::shared_ptr<Model> loadModelFromFile(const std::string &filename);
     std::shared_ptr<Model> loadModelFromData(std::vector<float> vertexData, uint32_t vertexSize, std::vector<uint32_t> indices);
@@ -40,6 +41,8 @@ class Engine {
 
     bool poll();
     float getFrameTime() { return frameTime; }
+
+    static Engine* getInstance();
 
   private:
 

@@ -9,9 +9,14 @@
 #include <limits>
 
 namespace app {
+
   class KeyboardMovementController {
 
     public:
+
+      KeyboardMovementController(xe::Input &input, xe::GameObject &viewerObject);
+      ~KeyboardMovementController();
+
       struct KeyMappings {
         int moveLeft = KEY_A;
         int moveRight = KEY_D;
@@ -25,7 +30,10 @@ namespace app {
         int lookDown = KEY_DOWN;
       };
 
-      void update(xe::Input &input, xe::GameObject& gameObject, float dt);
+      void update(float dt);
+
+      xe::Input &input;
+      xe::GameObject &viewerObject;
 
       KeyMappings keys{};
       float moveSpeed{3.f};

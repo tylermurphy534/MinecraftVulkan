@@ -2,6 +2,12 @@
 
 namespace xe {
 
+static Engine* _instance;
+
+Engine* Engine::getInstance() {
+  return _instance;
+}
+
 Engine::Engine(int width, int height, std::string name) : xeWindow{width, height, name}, 
   xeDevice{xeWindow}, 
   xeRenderer{xeWindow, xeDevice},
@@ -9,8 +15,8 @@ Engine::Engine(int width, int height, std::string name) : xeWindow{width, height
   xeInput{xeWindow} {
   loadDescriptorPool();
   alutInit(0, NULL);
-
   std::cout << "Audio device: " << alcGetString(NULL, ALC_DEFAULT_DEVICE_SPECIFIER) << "\n";
+  _instance = this;
 };
 
 Engine::~Engine() {

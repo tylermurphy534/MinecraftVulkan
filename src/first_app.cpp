@@ -1,4 +1,5 @@
 #include "first_app.hpp"
+#include "chunk.hpp"
 
 namespace app {
 
@@ -22,13 +23,13 @@ void FirstApp::run() {
   auto viewerObject = xe::GameObject::createGameObject();
   viewerObject.transform.translation = {-7.f, 3.f, -7.f};
   viewerObject.transform.rotation.y = glm::radians(45.f);
-  KeyboardMovementController cameraController{};
+  KeyboardMovementController cameraController{xeEngine.getInput(), viewerObject};
 
   while (xeEngine.poll()) {
 
     float frameTime = xeEngine.getFrameTime();
 
-    cameraController.update(xeEngine.getInput(), viewerObject, frameTime);
+    cameraController.update(frameTime);
     xeEngine.getCamera().setViewYXZ(viewerObject.transform.translation, viewerObject.transform.rotation);
 
     if(xeEngine.beginFrame()) {
@@ -37,6 +38,8 @@ void FirstApp::run() {
     }
 
   }
+
+  Chunk::reset();
 
   xeEngine.close();
 
@@ -57,6 +60,15 @@ void FirstApp::loadGameObjects() {
   dragon2.transform.rotation.y = glm::radians(90.f);
   dragon2.transform.scale = {.35f, .35f, .35f};
   gameObjects.push_back(std::move(dragon2));
+
+  Chunk* chunk = Chunk::newChunk(0, 0, 123);
+  chunk->createMesh();
+
+  auto chunkObject = xe::GameObject::createGameObject();
+  chunkObject.model = chunk->getMesh();
+  chunkObject.transform.translation = {5.f, 5.f, 5.f};
+  gameObjects.push_back(std::move(chunkObject));
+
 }
 
 }
