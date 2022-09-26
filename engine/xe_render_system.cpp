@@ -130,7 +130,7 @@ void RenderSystem::createPipeline(VkRenderPass renderPass, std::string vert, std
   assert(pipelineLayout != nullptr && "Cannot create pipeline before pipeline layout");
 
   PipelineConfigInfo pipelineConfig{};
-  Pipeline::defaultPipelineConfigInfo(pipelineConfig);
+  Pipeline::defaultPipelineConfigInfo(pipelineConfig, xeDevice);
   if (cullingEnabled) {
     pipelineConfig.rasterizationInfo.cullMode = VK_CULL_MODE_BACK_BIT;
   }

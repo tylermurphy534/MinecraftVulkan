@@ -136,7 +136,7 @@ namespace xe {
     vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
   }
 
-  void Pipeline::defaultPipelineConfigInfo(PipelineConfigInfo& configInfo) {
+  void Pipeline::defaultPipelineConfigInfo(PipelineConfigInfo& configInfo, Device& device) {
     
     configInfo.inputAssemblyInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
     configInfo.inputAssemblyInfo.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
@@ -162,7 +162,7 @@ namespace xe {
   
     configInfo.multisampleInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
     configInfo.multisampleInfo.sampleShadingEnable = VK_FALSE;
-    configInfo.multisampleInfo.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
+    configInfo.multisampleInfo.rasterizationSamples = device.getSamples();
     configInfo.multisampleInfo.minSampleShading = 1.0f;
     configInfo.multisampleInfo.pSampleMask = nullptr;
     configInfo.multisampleInfo.alphaToCoverageEnable = VK_FALSE;

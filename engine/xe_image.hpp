@@ -19,22 +19,25 @@ class Image {
   private:
 
     void createTextureImage(const std::string &filename);
-    void createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory);
     void transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
     void generateMipmaps(VkImage image, VkFormat imageFormat, int32_t texWidth, int32_t texHeight, uint32_t mipLevels);
     void copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
     void createTextureImageView();
     void createTextureSampler(); 
 
+    static void createImage(Device& device, uint32_t width, uint32_t height, uint32_t mipLevels, VkSampleCountFlagBits numSamples, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory);
+    static VkImageView createImageView(Device& device, VkImage image, VkFormat format, VkImageAspectFlags aspectFlags, uint32_t mipLevels);
+
     Device &xeDevice;
 
     uint32_t mipLevels;
-    VkImage textureImage;
     VkSampler textureSampler;
+    VkImage textureImage;
     VkImageView textureImageView;
     VkDeviceMemory textureImageMemory;
 
     friend class RenderSystem;
+    friend class SwapChain;
 
 };
 

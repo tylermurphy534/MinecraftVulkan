@@ -131,7 +131,10 @@ void Device::pickPhysicalDevice() {
   }
 
   vkGetPhysicalDeviceProperties(physicalDevice, &properties);
+  samplerAnisotropy = properties.limits.maxSamplerAnisotropy;
   std::cout << "Physical device: " << properties.deviceName << std::endl;
+  std::cout << "Multisample Count: " << msaaSamples << std::endl;
+  std::cout << "Anisotropic Level: " << samplerAnisotropy << std::endl;
 }
 
 VkSampleCountFlagBits Device::getMaxUsableSampleCount() {

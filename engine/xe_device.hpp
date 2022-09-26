@@ -42,7 +42,8 @@ class Device {
   VkSurfaceKHR surface() { return surface_; }
   VkQueue graphicsQueue() { return graphicsQueue_; }
   VkQueue presentQueue() { return presentQueue_; }
-  VkPhysicalDeviceProperties getProperties() { return properties; }
+  VkSampleCountFlagBits getSamples() { return msaaSamples; }
+  float getAnisotropy() { return samplerAnisotropy; }
 
   SwapChainSupportDetails getSwapChainSupport() { return querySwapChainSupport(physicalDevice); }
   uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
@@ -101,6 +102,7 @@ class Device {
   VkQueue presentQueue_;
 
   VkSampleCountFlagBits msaaSamples = VK_SAMPLE_COUNT_1_BIT;
+  float samplerAnisotropy = 1;
 
   const std::vector<const char *> validationLayers = {"VK_LAYER_KHRONOS_validation"};
   const std::vector<const char *> deviceExtensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME, VK_KHR_MAINTENANCE1_EXTENSION_NAME};

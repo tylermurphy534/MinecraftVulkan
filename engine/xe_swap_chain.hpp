@@ -1,6 +1,7 @@
 #pragma once
 
 #include "xe_device.hpp"
+#include "xe_image.hpp"
 
 #include <vulkan/vulkan.h>
 
@@ -52,6 +53,7 @@ class SwapChain {
   void init();
   void createSwapChain();
   void createImageViews();
+  void createColorResources();
   void createDepthResources();
   void createRenderPass();
   void createFramebuffers();
@@ -73,6 +75,9 @@ class SwapChain {
   std::vector<VkImage> depthImages;
   std::vector<VkDeviceMemory> depthImageMemorys;
   std::vector<VkImageView> depthImageViews;
+  std::vector<VkImage> colorImages;
+  std::vector<VkDeviceMemory> colorImageMemorys;
+  std::vector<VkImageView> colorImageViews;
   std::vector<VkImage> swapChainImages;
   std::vector<VkImageView> swapChainImageViews;
 
