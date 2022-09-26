@@ -11,9 +11,9 @@
 #include <string>
 #include <map>
 
-#define INVALID     -1
-#define AIR         0
-#define DIRT        1
+#define INVALID     0
+#define AIR         1
+#define DIRT        2
 
 namespace app {
 
@@ -21,27 +21,28 @@ class Chunk {
 
   public:
 
-    static Chunk* newChunk(uint32_t gridX, uint32_t gridZ, uint32_t world_seed);
+    static Chunk* newChunk(int32_t gridX, int32_t gridZ, uint32_t world_seed);
     static void reset();
 
-    Chunk(uint32_t gridX, uint32_t gridZ, uint32_t world_seed);
+    Chunk(int32_t gridX, int32_t gridZ, uint32_t world_seed);
     ~Chunk() {};
 
-    const uint32_t gridX, gridZ, world_seed, chunk_seed;
+    const int32_t gridX, gridZ;
+    const uint32_t world_seed, chunk_seed;
 
     void createMesh();
     void createMeshAsync();
     std::shared_ptr<xe::Model> getMesh();
 
-    uint8_t getBlock(uint32_t x, uint32_t y, uint32_t z);
-    void setBlock(uint32_t x, uint32_t y, uint32_t z, uint8_t block);
+    uint8_t getBlock(int32_t x, int32_t y, int32_t z);
+    void setBlock(int32_t x, int32_t y, int32_t z, uint8_t block);
 
-    static Chunk* getChunk(uint32_t x, uint32_t z);
+    static Chunk* getChunk(int32_t x, int32_t z);
 
   private:
 
     void generate();
-    void addVerticies(uint32_t side, uint32_t x, uint32_t y, uint32_t z);
+    void addVerticies(uint8_t side, int32_t x, int32_t y, int32_t z);
 
     bool reloadRequired{false};
     bool working{false};

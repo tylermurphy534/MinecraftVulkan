@@ -46,14 +46,14 @@ void FirstApp::run() {
 
 void FirstApp::loadGameObjects() {
 
-  for(int x = 0; x < 10; x++) {
-    for(int z = 0; z < 10; z++) {
+  for(int32_t x = 0; x < 10; x++) {
+    for(int32_t z = 0; z < 10; z++) {
       Chunk* chunk = Chunk::newChunk(x, z, 53463);
     }
   }
 
-  for(int x = 0; x < 10; x++) {
-    for(int z = 0; z < 10; z++) {
+  for(int32_t x = 0; x < 10; x++) {
+    for(int32_t z = 0; z < 10; z++) {
       Chunk* chunk = Chunk::getChunk(x,z);
       chunk->createMesh();
       

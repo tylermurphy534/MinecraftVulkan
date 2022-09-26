@@ -3,9 +3,9 @@
 
 namespace app {
 
-static std::map<std::pair<uint32_t, uint32_t>, Chunk*> chunks{};
+static std::map<std::pair<int32_t, int32_t>, Chunk*> chunks{};
 
-Chunk::Chunk(uint32_t gridX, uint32_t gridZ, uint32_t world_seed) 
+Chunk::Chunk(int32_t gridX, int32_t gridZ, uint32_t world_seed) 
   : world_seed{world_seed},
     chunk_seed{(world_seed * gridX) + (world_seed * gridZ) / 2},
     gridX{gridX},
@@ -13,13 +13,13 @@ Chunk::Chunk(uint32_t gridX, uint32_t gridZ, uint32_t world_seed)
   generate();
 }
 
-Chunk* Chunk::newChunk(uint32_t gridX, uint32_t gridZ, uint32_t world_seed) {
+Chunk* Chunk::newChunk(int32_t gridX, int32_t gridZ, uint32_t world_seed) {
   Chunk* chunk = new Chunk(gridX, gridZ, world_seed);
   chunks[{gridX, gridZ}] = std::move(chunk);
   return chunks[{gridX, gridZ}];
 }
 
-Chunk* Chunk::getChunk(uint32_t gridX, uint32_t gridZ) {
+Chunk* Chunk::getChunk(int32_t gridX, int32_t gridZ) {
   if(chunks.count({gridX, gridZ})) {
     return chunks[{gridX, gridZ}];
   } else {
@@ -27,31 +27,29 @@ Chunk* Chunk::getChunk(uint32_t gridX, uint32_t gridZ) {
   }
 }
 
-uint8_t Chunk::getBlock(uint32_t x, uint32_t y, uint32_t z) {
+uint8_t Chunk::getBlock(int32_t x, int32_t y, int32_t z) {
   if(y > 256) return AIR;
   if(y < 0) return INVALID;
   int chunkX = gridX;
   int chunkZ = gridZ;
   if(x < 0) {
     chunkX--;
-    x = 15;
   } else if(x > 15) {
     chunkX++;
-    x = 0;
   }
   if(z < 0) {
     chunkZ--;
-    z = 15;
   } else if(z > 15) {
     chunkZ++;
-    z = 0;
   }
+  x = (x+16)%16;
+  z = (z+16)%16;
   if(chunkX == gridX && chunkZ == gridZ) {
     int index = x + (z * 16) + (y * 256);
     return blocks[index];
   } else {
     Chunk* chunk = getChunk(chunkX, chunkZ);
-    if(chunk == nullptr) {
+    if(chunk == NULL) {
       return INVALID;
     } else {
       int index = x + (z * 16) + (y * 256);
@@ -60,7 +58,7 @@ uint8_t Chunk::getBlock(uint32_t x, uint32_t y, uint32_t z) {
   }
 }
 
-void Chunk::setBlock(uint32_t x, uint32_t y, uint32_t z, uint8_t block) {
+void Chunk::setBlock(int32_t x, int32_t y, int32_t z, uint8_t block) {
   int index = x + (z * 16) + (y * 256);
   blocks[index] = block;
 }
@@ -91,9 +89,9 @@ void Chunk::createMeshAsync() {
 void Chunk::createMesh() {
   working = true;
   vertexData.clear();
-  for(int x=0;x<16;x++) {
-    for(int y=0; y<256; y++) {
-      for(int z=0; z<16; z++) {
+  for(int32_t x=0;x<16;x++) {
+    for(int32_t y=0; y<256; y++) {
+      for(int32_t z=0; z<16; z++) {
         uint8_t block = getBlock(x,y,z);
         if(block == AIR) continue;
         if(getBlock(x+1,y,z) == AIR) {
@@ -121,7 +119,7 @@ void Chunk::createMesh() {
   reloadRequired = true;
 }
 
-void Chunk::addVerticies(uint32_t side, uint32_t x, uint32_t y, uint32_t z) {
+void Chunk::addVerticies(uint8_t side, int32_t x, int32_t y, int32_t z) {
   for(int i = 0; i < 6; i ++) {
     vertexData.push_back(px[side * 6 + i][0] + x);
     vertexData.push_back(px[side * 6 + i][1] + y);
