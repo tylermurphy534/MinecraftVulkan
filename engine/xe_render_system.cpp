@@ -18,7 +18,6 @@ RenderSystem::RenderSystem(
     pushCunstantDataSize{pushCunstantDataSize},
     uniformBindings{uniformBindings},
     imageBindings{imageBindings} {
-  createTextureSampler();
   createDescriptorSetLayout();
   createUniformBuffers();
   createDescriptorSets();
@@ -28,31 +27,7 @@ RenderSystem::RenderSystem(
 
 RenderSystem::~RenderSystem() {
   vkDestroyPipelineLayout(xeDevice.device(), pipelineLayout, nullptr);
-  vkDestroySampler(xeDevice.device(), textureSampler, nullptr);
 };
-
-void RenderSystem::createTextureSampler() {
-  VkSamplerCreateInfo samplerInfo{};
-  samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
-  samplerInfo.magFilter = VK_FILTER_LINEAR;
-  samplerInfo.minFilter = VK_FILTER_LINEAR;
-  samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-  samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-  samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-  samplerInfo.anisotropyEnable = VK_FALSE;
-  samplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
-  samplerInfo.unnormalizedCoordinates = VK_FALSE;
-  samplerInfo.compareEnable = VK_FALSE;
-  samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
-  samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
-  samplerInfo.mipLodBias = 0.0f;
-  samplerInfo.minLod = 0.0f;
-  samplerInfo.maxLod = 0.0f;
-
-  if (vkCreateSampler(xeDevice.device(), &samplerInfo, nullptr, &textureSampler) != VK_SUCCESS) {
-    throw std::runtime_error("failed to create texture sampler!");
-  }
-}
 
 void RenderSystem::createDescriptorSetLayout() {
   DescriptorSetLayout::Builder builder{xeDevice};
@@ -62,7 +37,7 @@ void RenderSystem::createDescriptorSetLayout() {
   }
 
   for ( const auto &[binding, image]: imageBindings) {
-    builder.addBinding(binding, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, &textureSampler);
+    builder.addBinding(binding, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, &(image->textureSampler));
   }
 
   xeDescriptorSetLayout = builder.build();
@@ -109,7 +84,7 @@ void RenderSystem::updateDescriptorSet(int frameIndex, bool allocate) {
     VkDescriptorImageInfo imageInfo{};
     imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
     imageInfo.imageView = image->textureImageView;
-    imageInfo.sampler = textureSampler;
+    imageInfo.sampler = image->textureSampler;
     writer.writeImage(binding, &imageInfo);
   }
 

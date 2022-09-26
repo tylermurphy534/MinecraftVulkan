@@ -16,13 +16,6 @@ struct PushConstant {
   alignas(16) glm::mat4 normalMatrix{1.f};
 };
 
-struct Vertex {
-  glm::vec3 position;
-  glm::vec3 color;
-  glm::vec3 normal;
-  glm::vec2 uv;
-};
-
 class SimpleRenderer {
 
   public:

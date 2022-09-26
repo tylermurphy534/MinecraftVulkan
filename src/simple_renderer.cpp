@@ -5,10 +5,9 @@ namespace app {
 SimpleRenderer::SimpleRenderer(xe::Engine &xeEngine, xe::Image *xeImage) {
   xeRenderSystem = xe::RenderSystem::Builder(xeEngine, "res/shaders/simple_shader.vert.spv", "res/shaders/simple_shader.frag.spv")
     .addVertexBinding(0, 3, 0) // position
-    .addVertexBinding(1, 3, 12) // color
-    .addVertexBinding(2, 3, 24) // normal
-    .addVertexBinding(3, 2, 36) // uvs
-    .setVertexSize(sizeof(Vertex))
+    .addVertexBinding(1, 3, 12) // normal
+    .addVertexBinding(2, 2, 24) // uvs
+    .setVertexSize(32)
     .addPushConstant(sizeof(PushConstant))
     .addUniformBinding(0, sizeof(UniformBuffer))
     .addTextureBinding(1, xeImage)

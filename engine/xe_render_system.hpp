@@ -106,7 +106,6 @@ class RenderSystem {
 
   private:
   
-    void createTextureSampler();
     void createDescriptorSetLayout();
     void createUniformBuffers();
     void createDescriptorSets();
@@ -127,8 +126,6 @@ class RenderSystem {
     std::vector<VkDescriptorSet> descriptorSets;
 
     uint32_t pushCunstantDataSize;
-
-    VkSampler textureSampler;
     
     VkPipelineLayout pipelineLayout;
     std::unique_ptr<Pipeline> xePipeline;

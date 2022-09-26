@@ -117,7 +117,7 @@ void Model::Builder::loadModel(const std::string &filepath) {
   indices.clear();
   vertexSize = 0;
 
-  bool vertex, color, normal, uvs;
+  bool vertex, normal, uvs;
 
   for (const auto &shape : shapes) {
     for (const auto &index : shape.mesh.indices) {
@@ -127,11 +127,6 @@ void Model::Builder::loadModel(const std::string &filepath) {
         vertexData.push_back(attrib.vertices[3 * index.vertex_index + 1]);
         vertexData.push_back(attrib.vertices[3 * index.vertex_index + 2]);
         vertex = true;
-
-        vertexData.push_back(attrib.colors[3 * index.vertex_index + 0]);
-        vertexData.push_back(attrib.colors[3 * index.vertex_index + 1]);
-        vertexData.push_back(attrib.colors[3 * index.vertex_index + 2]);
-        color = true;
       }
 
       if(index.normal_index >= 0) {
@@ -151,8 +146,6 @@ void Model::Builder::loadModel(const std::string &filepath) {
   }
 
   if(vertex)
-    vertexSize += 12;
-  if(color)
     vertexSize += 12;
   if(normal)
     vertexSize += 12;
