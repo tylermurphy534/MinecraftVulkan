@@ -19,7 +19,8 @@ class DescriptorSetLayout {
         uint32_t binding,
         VkDescriptorType descriptorType,
         VkShaderStageFlags stageFlags,
-        VkSampler *sampler);
+        VkSampler *sampler,
+        uint32_t count);
     std::unique_ptr<DescriptorSetLayout> build() const;
 
    private:
@@ -90,6 +91,7 @@ class DescriptorWriter {
 
   DescriptorWriter &writeBuffer(uint32_t binding, VkDescriptorBufferInfo *bufferInfo);
   DescriptorWriter &writeImage(uint32_t binding, VkDescriptorImageInfo *imageInfo);
+  DescriptorWriter &writeImageArray(uint32_t binding, std::vector<VkDescriptorImageInfo> *imageInfos);
 
   bool build(VkDescriptorSet &set);
   void overwrite(VkDescriptorSet &set);

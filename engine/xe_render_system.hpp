@@ -54,19 +54,25 @@ class RenderSystem {
           return *this;
         }
 
+        Builder& addTextureArrayBinding(uint32_t binding, std::vector<Image*>& image) {
+          imageArrayBindings[binding] = image;
+          return *this;
+        }
+
         Builder& setCulling(bool enabled) {
           cullingEnabled = enabled;
           return *this;
         }
 
         std::unique_ptr<RenderSystem> build() {
-          return std::make_unique<RenderSystem>(xeEngine, std::move(vert), std::move(frag), std::move(uniformBindings), std::move(imageBindings), std::move(pushCunstantDataSize), std::move(cullingEnabled), std::move(attributeDescptions), std::move(vertexSize));
+          return std::make_unique<RenderSystem>(xeEngine, std::move(vert), std::move(frag), std::move(uniformBindings), std::move(imageBindings), std::move(imageArrayBindings), std::move(pushCunstantDataSize), std::move(cullingEnabled), std::move(attributeDescptions), std::move(vertexSize));
         }
 
       private:
 
         std::map<uint32_t, uint32_t> uniformBindings{};
         std::map<uint32_t, Image*> imageBindings{};
+        std::map<uint32_t, std::vector<Image*>> imageArrayBindings{};
         uint32_t pushCunstantDataSize{0};
 
         std::vector<VkVertexInputAttributeDescription> attributeDescptions{};
@@ -86,6 +92,7 @@ class RenderSystem {
       std::string frag,
       std::map<uint32_t, uint32_t> uniformBindings,
       std::map<uint32_t, Image*> imageBindings,
+      std::map<uint32_t, std::vector<Image*>> imageArrayBindings,
       uint32_t pushCunstantDataSize,
       bool cullingEnabled,
       std::vector<VkVertexInputAttributeDescription> attributeDescptions,
@@ -101,6 +108,7 @@ class RenderSystem {
     void loadPushConstant(void *pushConstantData);
     void loadUniformObject(uint32_t binding, void *uniformBufferData);
     void loadTexture(uint32_t binding, Image *image);
+    void loadTextureArray(uint32_t binding, std::vector<Image*> &images);
     void render(GameObject &gameObject);
     void stop();
 
@@ -123,6 +131,7 @@ class RenderSystem {
     std::map<uint32_t, std::vector<std::unique_ptr<Buffer>>> uboBuffers{};
     std::map<uint32_t, uint32_t> uniformBindings;
     std::map<uint32_t, Image*> imageBindings;
+    std::map<uint32_t, std::vector<Image*>> imageArrayBindings{};
     std::vector<VkDescriptorSet> descriptorSets;
 
     uint32_t pushCunstantDataSize;

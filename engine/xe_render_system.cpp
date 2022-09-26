@@ -8,6 +8,7 @@ RenderSystem::RenderSystem(
   std::string frag,
   std::map<uint32_t, uint32_t> uniformBindings,
   std::map<uint32_t, Image*> imageBindings,
+  std::map<uint32_t, std::vector<Image*>> imageArrayBindings,
   uint32_t pushCunstantDataSize,
   bool cullingEnabled,
   std::vector<VkVertexInputAttributeDescription> attributeDescptions,
@@ -17,7 +18,8 @@ RenderSystem::RenderSystem(
     xeDescriptorPool{xeEngine.xeDescriptorPool},
     pushCunstantDataSize{pushCunstantDataSize},
     uniformBindings{uniformBindings},
-    imageBindings{imageBindings} {
+    imageBindings{imageBindings},
+    imageArrayBindings{imageArrayBindings} {
   createDescriptorSetLayout();
   createUniformBuffers();
   createDescriptorSets();
@@ -33,11 +35,15 @@ void RenderSystem::createDescriptorSetLayout() {
   DescriptorSetLayout::Builder builder{xeDevice};
   
   for ( const auto &[binding, size]: uniformBindings) {
-    builder.addBinding(binding, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT, nullptr);
+    builder.addBinding(binding, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT, nullptr, 1);
   }
 
   for ( const auto &[binding, image]: imageBindings) {
-    builder.addBinding(binding, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, &(image->textureSampler));
+    builder.addBinding(binding, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, &(image->textureSampler), 1);
+  }
+
+  for ( const auto &[binding, images]: imageArrayBindings) {
+    builder.addBinding(binding, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, 0, images.size());
   }
 
   xeDescriptorSetLayout = builder.build();
@@ -86,6 +92,18 @@ void RenderSystem::updateDescriptorSet(int frameIndex, bool allocate) {
     imageInfo.imageView = image->textureImageView;
     imageInfo.sampler = image->textureSampler;
     writer.writeImage(binding, &imageInfo);
+  }
+
+  std::vector<VkDescriptorImageInfo> imageInfos{};
+  for ( const auto &[binding, images]: imageArrayBindings) {
+    for( const auto &image: images) {
+      VkDescriptorImageInfo imageInfo{};
+      imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+      imageInfo.imageView = image->textureImageView;
+      imageInfo.sampler = image->textureSampler;
+      imageInfos.push_back(imageInfo);
+    }
+    writer.writeImageArray(binding, &imageInfos);
   }
 
   if (allocate) {
@@ -180,6 +198,11 @@ void RenderSystem::loadUniformObject(uint32_t binding, void *uniformBufferData) 
 
 void RenderSystem::loadTexture(uint32_t binding, Image *image) {
   imageBindings[binding] = image;
+  updateDescriptorSet(xeRenderer.getFrameIndex(), false);
+}
+
+void RenderSystem::loadTextureArray(uint32_t binding, std::vector<Image*>& images) {
+  imageArrayBindings[binding] = images;
   updateDescriptorSet(xeRenderer.getFrameIndex(), false);
 }
 

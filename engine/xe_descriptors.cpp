@@ -10,9 +10,9 @@ DescriptorSetLayout::Builder &DescriptorSetLayout::Builder::addBinding(
     uint32_t binding,
     VkDescriptorType descriptorType,
     VkShaderStageFlags stageFlags,
-    VkSampler *sampler) {
+    VkSampler *sampler,
+    uint32_t count) {
   assert(bindings.count(binding) == 0 && "Binding already in use");
-  uint32_t count = 1;
   VkDescriptorSetLayoutBinding layoutBinding{};
   layoutBinding.binding = binding;
   layoutBinding.descriptorType = descriptorType;
@@ -162,6 +162,24 @@ DescriptorWriter &DescriptorWriter::writeImage(
   write.dstBinding = binding;
   write.pImageInfo = imageInfo;
   write.descriptorCount = 1;
+
+  writes.push_back(write);
+  return *this;
+}
+
+DescriptorWriter &DescriptorWriter::writeImageArray(
+  uint32_t binding, std::vector<VkDescriptorImageInfo> *imageInfos) {
+  assert(setLayout.bindings.count(binding) == 1 && "Layout does not contain specified binding");
+
+  auto &bindingDescription = setLayout.bindings[binding];
+  
+  VkWriteDescriptorSet write{};
+  write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+  write.descriptorType = bindingDescription.descriptorType;
+  write.dstBinding = binding;
+  write.dstArrayElement = 0;
+  write.pImageInfo = imageInfos->data();
+  write.descriptorCount = imageInfos->size();
 
   writes.push_back(write);
   return *this;

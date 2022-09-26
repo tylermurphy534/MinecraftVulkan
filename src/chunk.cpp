@@ -75,7 +75,7 @@ std::shared_ptr<xe::Model> Chunk::getMesh() {
     delete chunkMesh.get();
     xe::Model::Builder builder{};
     builder.vertexData = vertexData;
-    builder.vertexSize = 32;
+    builder.vertexSize = 36;
     chunkMesh = std::make_shared<xe::Model>(xe::Engine::getInstance()->getDevice(), builder);
   }
   return chunkMesh;
@@ -129,6 +129,7 @@ void Chunk::addVerticies(uint8_t side, int32_t x, int32_t y, int32_t z) {
     vertexData.push_back(nm[side][2]);
     vertexData.push_back(uv[i][0]);
     vertexData.push_back(uv[i][1]);
+    vertexData.push_back(0.f);
   }
 }
 

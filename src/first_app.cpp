@@ -11,9 +11,12 @@ FirstApp::~FirstApp() {}
 
 void FirstApp::run() {
 
-  std::shared_ptr<xe::Image> image = xeEngine.loadImageFromFile("res/image/dirt.jpg"); 
+  std::shared_ptr<xe::Image> dirt = xeEngine.loadImageFromFile("res/image/dirt.jpg"); 
+  std::shared_ptr<xe::Image> grass = xeEngine.loadImageFromFile("res/image/grass.png"); 
 
-  SimpleRenderer renderer{xeEngine, image.get()};
+  std::vector<xe::Image*> images = {dirt.get(), grass.get()};
+
+  SimpleRenderer renderer{xeEngine, images};
 
   xe::Sound sound{"res/sound/when_the_world_ends.wav"};
   sound.setLooping(true);
@@ -32,7 +35,7 @@ void FirstApp::run() {
     xeEngine.getCamera().setViewYXZ(viewerObject.transform.translation, viewerObject.transform.rotation);
 
     if(xeEngine.beginFrame()) {
-      renderer.render(gameObjects, xeEngine.getCamera(), image.get());
+      renderer.render(gameObjects, xeEngine.getCamera());
       xeEngine.endFrame();
     }
 
