@@ -11,6 +11,7 @@
 #include <string>
 #include <map>
 
+#define INVALID     -1
 #define AIR         0
 #define DIRT        1
 

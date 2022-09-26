@@ -46,13 +46,23 @@ void FirstApp::run() {
 
 void FirstApp::loadGameObjects() {
 
-  Chunk* chunk = Chunk::newChunk(0, 0, 123);
-  chunk->createMesh();
+  for(int x = 0; x < 10; x++) {
+    for(int z = 0; z < 10; z++) {
+      Chunk* chunk = Chunk::newChunk(x, z, 53463);
+    }
+  }
 
-  auto chunkObject = xe::GameObject::createGameObject();
-  chunkObject.model = chunk->getMesh();
-  chunkObject.transform.translation = {0.f, 0.f, 0.f};
-  gameObjects.push_back(std::move(chunkObject));
+  for(int x = 0; x < 10; x++) {
+    for(int z = 0; z < 10; z++) {
+      Chunk* chunk = Chunk::getChunk(x,z);
+      chunk->createMesh();
+      
+      auto chunkObject = xe::GameObject::createGameObject();
+      chunkObject.model = chunk->getMesh();
+      chunkObject.transform.translation = {16.f*x, 0.f, 16.f*z};
+      gameObjects.push_back(std::move(chunkObject));
+    }
+  }
 
 }
 

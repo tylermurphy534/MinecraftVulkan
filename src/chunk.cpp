@@ -3,7 +3,7 @@
 
 namespace app {
 
-static std::map<std::string, std::unique_ptr<Chunk>> chunks{};
+static std::map<std::pair<uint32_t, uint32_t>, Chunk*> chunks{};
 
 Chunk::Chunk(uint32_t gridX, uint32_t gridZ, uint32_t world_seed) 
   : world_seed{world_seed},
@@ -14,13 +14,61 @@ Chunk::Chunk(uint32_t gridX, uint32_t gridZ, uint32_t world_seed)
 }
 
 Chunk* Chunk::newChunk(uint32_t gridX, uint32_t gridZ, uint32_t world_seed) {
-  std::unique_ptr<Chunk> chunk = std::make_unique<Chunk>(gridX, gridZ, world_seed);
-  std::string key = gridX + "." + gridZ;
-  chunks[key] = std::move(chunk);
-  return chunks[key].get();
+  Chunk* chunk = new Chunk(gridX, gridZ, world_seed);
+  chunks[{gridX, gridZ}] = std::move(chunk);
+  return chunks[{gridX, gridZ}];
+}
+
+Chunk* Chunk::getChunk(uint32_t gridX, uint32_t gridZ) {
+  if(chunks.count({gridX, gridZ})) {
+    return chunks[{gridX, gridZ}];
+  } else {
+    return NULL;
+  }
+}
+
+uint8_t Chunk::getBlock(uint32_t x, uint32_t y, uint32_t z) {
+  if(y > 256) return AIR;
+  if(y < 0) return INVALID;
+  int chunkX = gridX;
+  int chunkZ = gridZ;
+  if(x < 0) {
+    chunkX--;
+    x = 15;
+  } else if(x > 15) {
+    chunkX++;
+    x = 0;
+  }
+  if(z < 0) {
+    chunkZ--;
+    z = 15;
+  } else if(z > 15) {
+    chunkZ++;
+    z = 0;
+  }
+  if(chunkX == gridX && chunkZ == gridZ) {
+    int index = x + (z * 16) + (y * 256);
+    return blocks[index];
+  } else {
+    Chunk* chunk = getChunk(chunkX, chunkZ);
+    if(chunk == nullptr) {
+      return INVALID;
+    } else {
+      int index = x + (z * 16) + (y * 256);
+      return chunk->blocks[index];
+    }
+  }
+}
+
+void Chunk::setBlock(uint32_t x, uint32_t y, uint32_t z, uint8_t block) {
+  int index = x + (z * 16) + (y * 256);
+  blocks[index] = block;
 }
 
 void Chunk::reset() {
+  for(const auto &[key, chunk]: chunks) {
+    delete chunk;
+  }
   chunks.clear();
 }
 
@@ -33,51 +81,6 @@ std::shared_ptr<xe::Model> Chunk::getMesh() {
     chunkMesh = std::make_shared<xe::Model>(xe::Engine::getInstance()->getDevice(), builder);
   }
   return chunkMesh;
-}
-
-uint8_t Chunk::getBlock(uint32_t x, uint32_t y, uint32_t z) {
-  if(y < 0 || y > 256) return AIR;
-  int chunkX = gridX;
-  int chunkZ = gridZ;
-  if(x < 0) {
-    chunkX--;
-    x = 15;
-  } else if(x > 16) {
-    chunkX ++;
-    x = 0;
-  }
-  if(z < 0) {
-    chunkZ--;
-    z = 15;
-  } else if(z > 16) {
-    chunkZ ++;
-    z = 0;
-  }
-  if(chunkX == gridX && chunkZ == gridZ) {
-    int index = (z * 16 * 256) + (y * 16) + x;
-    return blocks[index];
-  } else {
-    Chunk* chunk = getChunk(chunkX, chunkZ);
-    if(chunk == nullptr) {
-      return AIR;
-    } else {
-      int index = (z * 16 * 256) + (y * 16) + x;
-      return chunk->blocks[index];
-    }
-  }
-}
-
-void Chunk::setBlock(uint32_t x, uint32_t y, uint32_t z, uint8_t block) {
-  int index = (z * 16 * 256) + (y * 16) + x;
-  blocks[index] = block;
-}
-
-Chunk* Chunk::getChunk(uint32_t x, uint32_t z) {
-  std::string key = x + "." + z;
-  if(chunks.count(key))
-    return chunks[key].get();
-  else
-    return nullptr;
 }
 
 void Chunk::createMeshAsync() {
@@ -134,11 +137,11 @@ void Chunk::addVerticies(uint32_t side, uint32_t x, uint32_t y, uint32_t z) {
 void Chunk::generate() {
   blocks.resize(16*16*256);
   
-  const PerlinNoise perlin{123};
+  const PerlinNoise perlin{world_seed};
 
   for(int x = 0; x < 16; x++) {
     for(int z = 0; z < 16; z++) {
-      int height = perlin.octave2D_01((x * 0.01), (z * 0.01), 4) * 5;
+      int height = perlin.octave2D_01((( x + gridX * 16) * 0.01), ((z + gridZ * 16) * 0.01), 4) * 10;
       for(int y = 0; y < 256; y++) {
         if(y <= height)
           setBlock(x, y, z, DIRT);

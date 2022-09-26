@@ -56,7 +56,7 @@ bool Engine::poll() {
   frameTime = std::chrono::duration<float, std::chrono::seconds::period>(newTime - currentTime).count();
   currentTime = newTime;
   float aspect = xeRenderer.getAspectRatio();
-  xeCamera.setPerspectiveProjection(glm::radians(FOV), aspect, 0.1f, 100.f);
+  xeCamera.setPerspectiveProjection(glm::radians(FOV), aspect, 0.1f, 1000.f);
   return !xeWindow.shouldClose();
 }
 
