@@ -14,6 +14,7 @@
 #define INVALID     0
 #define AIR         1
 #define DIRT        2
+#define GRASS       3
 
 namespace app {
 
@@ -110,12 +111,12 @@ const float nm[6][3] = {
 
 
 const float uv[6][2] = {
+  {1.f,0.f},
   {1.f,1.f},
   {0.f,1.f},
+  {0.f,1.f},
   {0.f,0.f},
-  {0.f,0.f},
-  {1.f,0.f},
-  {1.f,1.f}
+  {1.f,0.f}
 };
 
 }
