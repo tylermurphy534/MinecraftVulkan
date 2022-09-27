@@ -16,14 +16,14 @@ Chunk::Chunk(int32_t gridX, int32_t gridZ, uint32_t world_seed)
 }
 
 Chunk::~Chunk() {
-  if(chunkMesh != nullptr)
-    delete chunkMesh;
   if(worker.joinable())
     worker.join();
+  if(chunkMesh != nullptr)
+    delete chunkMesh;
 }
 
 //
-//  CHUNK CREATION AND DELETION
+//  CHUNK CREATION, DELETION, AND RETREVAL
 //
 
 static std::map<std::pair<int32_t, int32_t>, Chunk*> chunks{};
@@ -38,8 +38,15 @@ Chunk* Chunk::getChunk(int32_t gridX, int32_t gridZ) {
   if(chunks.count({gridX, gridZ})) {
     return chunks[{gridX, gridZ}];
   } else {
-    return NULL;
+    return nullptr;
   }
+}
+
+void Chunk::deleteChunk(int32_t gridX, int32_t gridZ) {
+  Chunk* chunk = getChunk(gridX, gridZ);
+  if(chunk == nullptr) return; // Chunk does not exist or is already deleted
+  delete chunk;
+  chunks.erase({gridX, gridZ});
 }
 
 //
@@ -51,7 +58,7 @@ static std::map<std::string, uint32_t> texturesIds{};
 static std::vector<xe::Image*> textures{};
 
 void loadTexture(const std::string& filePath) {
-  xe::Image* image = xe::Engine::getInstance()->loadImageFromFile(filePath, false);
+  xe::Image* image = new xe::Image(filePath, false);
   texturesIds[filePath] = static_cast<uint32_t>(textures.size());
   textures.push_back(image);
 }
@@ -88,12 +95,15 @@ void Chunk::unload() {
 //
 
 void Chunk::createMeshAsync(Chunk* c) {
+  if(c == nullptr) return;
   if(c->working) return;
+  if(c->worker.joinable())
+    c->worker.join();
   c->worker = std::thread(createMesh, c);
 }
 
 void Chunk::createMesh(Chunk* c) {
-  c->working = true;
+  if(c == nullptr) return;
   c->vertexData.data.clear();
   for(int32_t x=0;x<16;x++) {
     for(int32_t y=0; y<256; y++) {
@@ -152,7 +162,7 @@ xe::Model* Chunk::getMesh() {
     xe::Model::Builder builder{};
     builder.vertexData = vertexData;
     builder.vertexSize = 36;
-    chunkMesh = new xe::Model(xe::Engine::getInstance()->getDevice(), builder);
+    chunkMesh = new xe::Model(builder);
     reloadRequired = false;
   }
   return chunkMesh;

@@ -1,4 +1,5 @@
 #include "xe_model.hpp"
+#include "xe_engine.hpp"
 
 #define TINYOBJLOADER_IMPLEMENTATION
 #include "xe_obj_loader.hpp"
@@ -13,17 +14,17 @@
 
 namespace xe {
 
-Model::Model(Device &device, const Model::Builder &builder) : xeDevice{device} {
+Model::Model(const Model::Builder &builder) : xeDevice{Engine::getInstance()->xeDevice} {
   createVertexBuffers(builder.vertexData.data, builder.vertexSize);
   createIndexBuffers(builder.indices);
 }
 
 Model::~Model() {}
 
-Model* Model::createModelFromFile(Device &device, const std::string &filepath) {
+Model* Model::createModelFromFile(const std::string &filepath) {
   Builder builder{};
   builder.loadModel(filepath);
-  return new Model(device, builder);
+  return new Model(builder);
 }
 
 void Model::createVertexBuffers(const std::vector<unsigned char> &vertexData, uint32_t vertexSize) {

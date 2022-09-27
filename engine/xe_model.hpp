@@ -34,13 +34,13 @@ class Model {
       void loadModel(const std::string &filepath);
     };
 
-    Model(Device &device, const Model::Builder &builder);
+    Model(const Model::Builder &builder);
     ~Model();
 
     Model(const Model &) = delete;
     Model operator=(const Model &) = delete;
 
-    static Model* createModelFromFile(Device &device, const std::string &filepath);
+    static Model* createModelFromFile(const std::string &filepath);
     
     void bind(VkCommandBuffer commandBuffer);
     void draw(VkCommandBuffer commandBuffer);

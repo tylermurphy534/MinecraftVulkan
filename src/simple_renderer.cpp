@@ -29,10 +29,6 @@ void SimpleRenderer::render(std::vector<xe::GameObject> &gameObjects, xe::Camera
     PushConstant pc{};
     pc.modelMatrix = obj.transform.mat4();
     pc.normalMatrix = obj.transform.normalMatrix();
-
-    Chunk* chunk = Chunk::getChunk(obj.transform.translation.x/16.f, obj.transform.translation.z/16.f);
-    obj.model = chunk->getMesh();
-
     xeRenderSystem->loadPushConstant(&pc);
     xeRenderSystem->render(obj);
   }

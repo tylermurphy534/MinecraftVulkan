@@ -1,7 +1,6 @@
 #pragma once
 
 #include "xe_device.hpp"
-#include "xe_game_object.hpp"
 #include "xe_swap_chain.hpp"
 #include "xe_descriptors.hpp"
 #include "xe_window.hpp"

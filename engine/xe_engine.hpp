@@ -1,13 +1,12 @@
 #pragma once
 
+#include "xe_buffer.hpp"
 #include "xe_device.hpp"
 #include "xe_renderer.hpp"
 #include "xe_camera.hpp"
 #include "xe_descriptors.hpp"
-#include "xe_image.hpp"
 #include "xe_input.hpp"
 #include "xe_sound.hpp"
-#include "xe_model.hpp"
 
 #include <chrono> 
 #include <string>
@@ -30,11 +29,6 @@ class Engine {
 
     Input& getInput() {return xeInput;}
     Camera& getCamera() {return xeCamera;}
-    Device& getDevice() {return xeDevice;}
-
-    Model* loadModelFromFile(const std::string &filename);
-    Model* loadModelFromData(std::vector<unsigned char> vertexData, uint32_t vertexSize, std::vector<uint32_t> indices);
-    Image* loadImageFromFile(const std::string &filename, bool anisotropic = true);
     
     bool beginFrame() { return xeRenderer.beginFrame(); }
     void endFrame() { xeRenderer.endFrame(); }
@@ -63,6 +57,8 @@ class Engine {
     std::unique_ptr<DescriptorPool> xeDescriptorPool;
 
     friend class RenderSystem;
+    friend class Image;
+    friend class Model;
 };
 
 }

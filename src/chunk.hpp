@@ -39,6 +39,7 @@ class Chunk {
 
     static Chunk* newChunk(int32_t gridX, int32_t gridZ, uint32_t world_seed);
     static Chunk* getChunk(int32_t gridX, int32_t gridZ);
+    static void deleteChunk(int32_t gridX, int32_t gridZ);
 
     static void createMesh(Chunk* c);
     static void createMeshAsync(Chunk* c);

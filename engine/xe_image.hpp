@@ -10,7 +10,7 @@ class Image {
 
   public:
   
-    Image(Device &xeDevice, const std::string &filename, bool anisotropic);
+    Image(const std::string &filename, bool anisotropic);
     ~Image();
 
     Image(const Image&) = delete;

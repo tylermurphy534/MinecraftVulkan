@@ -1,4 +1,5 @@
 #include "xe_image.hpp"
+#include "xe_engine.hpp"
 
 #include <vulkan/vulkan.h>
 #include <stdexcept>
@@ -10,7 +11,7 @@
 
 namespace xe {
 
-Image::Image(Device &xeDevice, const std::string &filename, bool anisotropic) : xeDevice{xeDevice} {
+Image::Image(const std::string &filename, bool anisotropic) : xeDevice{Engine::getInstance()->xeDevice} {
   createTextureImage(filename);
   createTextureImageView();
   createTextureSampler(anisotropic);
