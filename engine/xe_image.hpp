@@ -10,7 +10,7 @@ class Image {
 
   public:
   
-    Image(Device &xeDevice, const std::string &filename);
+    Image(Device &xeDevice, const std::string &filename, bool anisotropic);
     ~Image();
 
     Image(const Image&) = delete;
@@ -23,7 +23,7 @@ class Image {
     void generateMipmaps(VkImage image, VkFormat imageFormat, int32_t texWidth, int32_t texHeight, uint32_t mipLevels);
     void copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
     void createTextureImageView();
-    void createTextureSampler(); 
+    void createTextureSampler(bool anisotropic); 
 
     static void createImage(Device& device, uint32_t width, uint32_t height, uint32_t mipLevels, VkSampleCountFlagBits numSamples, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory);
     static VkImageView createImageView(Device& device, VkImage image, VkFormat format, VkImageAspectFlags aspectFlags, uint32_t mipLevels);

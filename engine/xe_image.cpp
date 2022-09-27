@@ -10,10 +10,10 @@
 
 namespace xe {
 
-Image::Image(Device &xeDevice, const std::string &filename) : xeDevice{xeDevice} {
+Image::Image(Device &xeDevice, const std::string &filename, bool anisotropic) : xeDevice{xeDevice} {
   createTextureImage(filename);
   createTextureImageView();
-  createTextureSampler();
+  createTextureSampler(anisotropic);
 }
 
 Image::~Image() {
@@ -217,7 +217,7 @@ void Image::createTextureImageView() {
     textureImageView = createImageView(xeDevice, textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, mipLevels);
 }
 
-void Image::createTextureSampler() {
+void Image::createTextureSampler(bool anisotropic) {
 
   VkSamplerCreateInfo samplerInfo{};
   samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
@@ -226,7 +226,7 @@ void Image::createTextureSampler() {
   samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
   samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
   samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-  samplerInfo.anisotropyEnable = VK_TRUE;
+  samplerInfo.anisotropyEnable = anisotropic ? VK_TRUE : VK_FALSE;
   samplerInfo.maxAnisotropy = xeDevice.getAnisotropy();
   samplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
   samplerInfo.unnormalizedCoordinates = VK_FALSE;

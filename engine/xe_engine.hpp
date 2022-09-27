@@ -33,7 +33,7 @@ class Engine {
 
     std::shared_ptr<Model> loadModelFromFile(const std::string &filename);
     std::shared_ptr<Model> loadModelFromData(std::vector<unsigned char> vertexData, uint32_t vertexSize, std::vector<uint32_t> indices);
-    Image* loadImageFromFile(const std::string &filename);
+    Image* loadImageFromFile(const std::string &filename, bool anisotropic = true);
     
     bool beginFrame() { return xeRenderer.beginFrame(); }
     void endFrame() { xeRenderer.endFrame(); }

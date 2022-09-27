@@ -46,8 +46,8 @@ std::shared_ptr<Model> Engine::loadModelFromData(std::vector<unsigned char> vert
   return std::make_shared<Model>(xeDevice, builder);
 }
 
-Image* Engine::loadImageFromFile(const std::string &filename) {
-  return new Image(xeDevice, filename);
+Image* Engine::loadImageFromFile(const std::string &filename, bool anisotropic) {
+  return new Image(xeDevice, filename, anisotropic);
 }
 
 bool Engine::poll() {

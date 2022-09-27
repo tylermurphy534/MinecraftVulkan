@@ -61,7 +61,7 @@ static std::map<std::string, uint32_t> texturesIds{};
 static std::vector<xe::Image*> textures{};
 
 void loadTexture(const std::string& filePath) {
-  xe::Image* image = xe::Engine::getInstance()->loadImageFromFile(filePath);
+  xe::Image* image = xe::Engine::getInstance()->loadImageFromFile(filePath, false);
   texturesIds[filePath] = static_cast<uint32_t>(textures.size());
   textures.push_back(image);
 }
