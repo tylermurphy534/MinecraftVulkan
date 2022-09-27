@@ -24,13 +24,23 @@ class RenderSystem {
       public:
         Builder(Engine &xeEngine, std::string vert, std::string frag) : xeEngine{xeEngine}, vert{vert}, frag{frag} {}
 
-        Builder& addVertexBinding(uint32_t binding, uint32_t dimension, uint32_t offset){
+        Builder& addVertexBindingf(uint32_t binding, uint32_t dimension, uint32_t offset){
           if(dimension == 1)
             attributeDescptions.push_back({binding, 0, VK_FORMAT_R32_SFLOAT, offset});
           if(dimension == 2)
             attributeDescptions.push_back({binding, 0, VK_FORMAT_R32G32_SFLOAT, offset});
           if(dimension == 3)
             attributeDescptions.push_back({binding, 0, VK_FORMAT_R32G32B32_SFLOAT, offset});
+          return *this;
+        }
+
+        Builder& addVertexBindingi(uint32_t binding, uint32_t dimension, uint32_t offset){
+          if(dimension == 1)
+            attributeDescptions.push_back({binding, 0, VK_FORMAT_R32_SINT, offset});
+          if(dimension == 2)
+            attributeDescptions.push_back({binding, 0, VK_FORMAT_R32G32_SINT, offset});
+          if(dimension == 3)
+            attributeDescptions.push_back({binding, 0, VK_FORMAT_R32G32B32_SINT, offset});
           return *this;
         }
 

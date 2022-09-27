@@ -3,20 +3,17 @@
 
 namespace app {
 
-FirstApp::FirstApp() : xeEngine{WIDTH, HEIGHT, "Xenon Vulkan Engine"} {
-  loadGameObjects();
-}
+FirstApp::FirstApp() : xeEngine{WIDTH, HEIGHT, "Xenon Vulkan Engine"} {};
 
 FirstApp::~FirstApp() {}
 
 void FirstApp::run() {
 
-  std::shared_ptr<xe::Image> dirt = xeEngine.loadImageFromFile("res/image/dirt.jpg"); 
-  std::shared_ptr<xe::Image> grass = xeEngine.loadImageFromFile("res/image/grass.png"); 
+  Chunk::load();
 
-  std::vector<xe::Image*> images = {dirt.get(), grass.get()};
+  loadGameObjects();
 
-  SimpleRenderer renderer{xeEngine, images};
+  SimpleRenderer renderer{xeEngine, Chunk::getTextures()};
 
   xe::Sound sound{"res/sound/when_the_world_ends.wav"};
   sound.setLooping(true);
@@ -41,9 +38,9 @@ void FirstApp::run() {
 
   }
 
-  Chunk::reset();
-
   xeEngine.close();
+
+  Chunk::unload();
 
 }
 

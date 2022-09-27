@@ -36,9 +36,9 @@ std::shared_ptr<Model> Engine::loadModelFromFile(const std::string &filename) {
   return Model::createModelFromFile(xeDevice, filename);
 }
 
-std::shared_ptr<Model> Engine::loadModelFromData(std::vector<float> vertexData, uint32_t vertexSize, std::vector<uint32_t> indices) {
+std::shared_ptr<Model> Engine::loadModelFromData(std::vector<unsigned char> vertexData, uint32_t vertexSize, std::vector<uint32_t> indices) {
   Model::Builder builder{};
-  builder.vertexData = vertexData;
+  builder.vertexData.data = vertexData;
   builder.vertexSize = vertexSize;
   if(indices.size() > 0) { 
     builder.indices = indices;
@@ -46,8 +46,8 @@ std::shared_ptr<Model> Engine::loadModelFromData(std::vector<float> vertexData, 
   return std::make_shared<Model>(xeDevice, builder);
 }
 
-std::shared_ptr<Image> Engine::loadImageFromFile(const std::string &filename) {
-  return std::make_shared<Image>(xeDevice, filename);
+Image* Engine::loadImageFromFile(const std::string &filename) {
+  return new Image(xeDevice, filename);
 }
 
 bool Engine::poll() {

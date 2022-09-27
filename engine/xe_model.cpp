@@ -14,7 +14,7 @@
 namespace xe {
 
 Model::Model(Device &device, const Model::Builder &builder) : xeDevice{device} {
-  createVertexBuffers(builder.vertexData, builder.vertexSize);
+  createVertexBuffers(builder.vertexData.data, builder.vertexSize);
   createIndexBuffers(builder.indices);
 }
 
@@ -26,10 +26,10 @@ std::unique_ptr<Model> Model::createModelFromFile(Device &device, const std::str
   return std::make_unique<Model>(device, builder);
 }
 
-void Model::createVertexBuffers(const std::vector<float> &vertexData, uint32_t vertexSize) {
-  vertexCount = static_cast<uint32_t>(vertexData.size()) / (vertexSize / 4);
+void Model::createVertexBuffers(const std::vector<unsigned char> &vertexData, uint32_t vertexSize) {
+  vertexCount = static_cast<uint32_t>(vertexData.size()) / vertexSize;
   assert(vertexCount >= 3 && "Vertex count must be atleast 3");
-  VkDeviceSize bufferSize = vertexData.size() * 4;
+  VkDeviceSize bufferSize = vertexData.size();
  
   Buffer stagingBuffer {
     xeDevice,
@@ -113,7 +113,7 @@ void Model::Builder::loadModel(const std::string &filepath) {
     throw std::runtime_error(warn + err);
   }
 
-  vertexData.clear();
+  vertexData.data.clear();
   indices.clear();
   vertexSize = 0;
 
@@ -123,22 +123,22 @@ void Model::Builder::loadModel(const std::string &filepath) {
     for (const auto &index : shape.mesh.indices) {
 
       if(index.vertex_index >= 0) {
-        vertexData.push_back(attrib.vertices[3 * index.vertex_index + 0]);
-        vertexData.push_back(attrib.vertices[3 * index.vertex_index + 1]);
-        vertexData.push_back(attrib.vertices[3 * index.vertex_index + 2]);
+        vertexData.write<float>(attrib.vertices[3 * index.vertex_index + 0]);
+        vertexData.write<float>(attrib.vertices[3 * index.vertex_index + 1]);
+        vertexData.write<float>(attrib.vertices[3 * index.vertex_index + 2]);
         vertex = true;
       }
 
       if(index.normal_index >= 0) {
-        vertexData.push_back(attrib.normals[3 * index.normal_index + 0]);
-        vertexData.push_back(attrib.normals[3 * index.normal_index + 1]);
-        vertexData.push_back(attrib.normals[3 * index.normal_index + 2]);
+        vertexData.write<float>(attrib.normals[3 * index.normal_index + 0]);
+        vertexData.write<float>(attrib.normals[3 * index.normal_index + 1]);
+        vertexData.write<float>(attrib.normals[3 * index.normal_index + 2]);
         normal = true;
       }
 
       if(index.texcoord_index >= 0) {
-        vertexData.push_back(attrib.texcoords[2 * index.texcoord_index + 0]);
-        vertexData.push_back(attrib.texcoords[2 * index.texcoord_index + 1]);
+        vertexData.write<float>(attrib.texcoords[2 * index.texcoord_index + 0]);
+        vertexData.write<float>(attrib.texcoords[2 * index.texcoord_index + 1]);
         uvs = true;
       }
 

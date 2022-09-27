@@ -14,8 +14,19 @@ namespace xe {
 class Model {
   public:
 
+    struct Data {
+      std::vector<unsigned char> data{};
+      template <typename T>
+      void write(T d) {
+        unsigned char const * p = reinterpret_cast<unsigned char const *>(&d);
+        for(std::size_t i = 0; i < sizeof(T); i++){
+          data.push_back(p[i]);
+        }
+      }
+    };
+
     struct Builder {
-      std::vector<float> vertexData{};
+      Model::Data vertexData{};
       uint32_t vertexSize;
 
       std::vector<uint32_t> indices{};
@@ -35,7 +46,7 @@ class Model {
     void draw(VkCommandBuffer commandBuffer);
 
   private:
-    void createVertexBuffers(const std::vector<float> &vertexData, uint32_t vertexSize);
+    void createVertexBuffers(const std::vector<unsigned char> &vertexData, uint32_t vertexSize);
     void createIndexBuffers(const std::vector<uint32_t> &indexData);
 
     Device &xeDevice;

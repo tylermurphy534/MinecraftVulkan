@@ -3,11 +3,11 @@
 layout (location = 0) in vec3 position;
 layout (location = 1) in vec3 normal;
 layout (location = 2) in vec2 uv;
-layout (location = 3) in float tex;
+layout (location = 3) in int tex;
 
 layout (location = 0) out vec3 fragColor;
 layout (location = 1) out vec2 fragUv;
-layout (location = 2) out float fragTex;
+layout (location = 2) out int fragTex;
 
 layout (binding = 0) uniform GlobalUbo {
   mat4 projectionViewMatrix;

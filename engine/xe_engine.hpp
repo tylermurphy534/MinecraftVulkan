@@ -32,8 +32,8 @@ class Engine {
     Device& getDevice() {return xeDevice;}
 
     std::shared_ptr<Model> loadModelFromFile(const std::string &filename);
-    std::shared_ptr<Model> loadModelFromData(std::vector<float> vertexData, uint32_t vertexSize, std::vector<uint32_t> indices);
-    std::shared_ptr<Image> loadImageFromFile(const std::string &filename);
+    std::shared_ptr<Model> loadModelFromData(std::vector<unsigned char> vertexData, uint32_t vertexSize, std::vector<uint32_t> indices);
+    Image* loadImageFromFile(const std::string &filename);
     
     bool beginFrame() { return xeRenderer.beginFrame(); }
     void endFrame() { xeRenderer.endFrame(); }
