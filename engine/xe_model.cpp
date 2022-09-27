@@ -20,10 +20,10 @@ Model::Model(Device &device, const Model::Builder &builder) : xeDevice{device} {
 
 Model::~Model() {}
 
-std::unique_ptr<Model> Model::createModelFromFile(Device &device, const std::string &filepath) {
+Model* Model::createModelFromFile(Device &device, const std::string &filepath) {
   Builder builder{};
   builder.loadModel(filepath);
-  return std::make_unique<Model>(device, builder);
+  return new Model(device, builder);
 }
 
 void Model::createVertexBuffers(const std::vector<unsigned char> &vertexData, uint32_t vertexSize) {

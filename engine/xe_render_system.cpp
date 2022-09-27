@@ -208,6 +208,8 @@ void RenderSystem::loadTextureArray(uint32_t binding, std::vector<Image*>& image
 
 void RenderSystem::render(GameObject &gameObject) {
 
+  if(gameObject.model == nullptr) return;
+
   gameObject.model->bind(xeRenderer.getCurrentCommandBuffer());
   gameObject.model->draw(xeRenderer.getCurrentCommandBuffer());
 

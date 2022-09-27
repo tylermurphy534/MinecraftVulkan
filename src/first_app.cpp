@@ -11,7 +11,15 @@ void FirstApp::run() {
 
   Chunk::load();
 
-  loadGameObjects();
+  for(int32_t x = 0; x < 10; x++) {
+    for(int32_t z = 0; z < 10; z++) {
+      Chunk* chunk = Chunk::newChunk(x, z, 53463);
+      Chunk::createMeshAsync(chunk);
+      auto chunkObject = xe::GameObject::createGameObject();
+      chunkObject.transform.translation = {16.f*x, 0.f, 16.f*z};
+      gameObjects.push_back(std::move(chunkObject));
+    }
+  }
 
   SimpleRenderer renderer{xeEngine, Chunk::getTextures()};
 
@@ -41,28 +49,6 @@ void FirstApp::run() {
   xeEngine.close();
 
   Chunk::unload();
-
-}
-
-void FirstApp::loadGameObjects() {
-
-  for(int32_t x = 0; x < 10; x++) {
-    for(int32_t z = 0; z < 10; z++) {
-      Chunk* chunk = Chunk::newChunk(x, z, 53463);
-    }
-  }
-
-  for(int32_t x = 0; x < 10; x++) {
-    for(int32_t z = 0; z < 10; z++) {
-      Chunk* chunk = Chunk::getChunk(x,z);
-      chunk->createMesh();
-      
-      auto chunkObject = xe::GameObject::createGameObject();
-      chunkObject.model = chunk->getMesh();
-      chunkObject.transform.translation = {16.f*x, 0.f, 16.f*z};
-      gameObjects.push_back(std::move(chunkObject));
-    }
-  }
 
 }
 

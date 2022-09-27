@@ -38,31 +38,30 @@ class Chunk {
     static std::vector<xe::Image*>& getTextures();
 
     static Chunk* newChunk(int32_t gridX, int32_t gridZ, uint32_t world_seed);
+    static Chunk* getChunk(int32_t gridX, int32_t gridZ);
 
-    Chunk(int32_t gridX, int32_t gridZ, uint32_t world_seed);
-    ~Chunk() {};
+    static void createMesh(Chunk* c);
+    static void createMeshAsync(Chunk* c);
+
+    xe::Model* getMesh();
+    uint8_t getBlock(int32_t x, int32_t y, int32_t z);
+    void setBlock(int32_t x, int32_t y, int32_t z, uint8_t block);
 
     const int32_t gridX, gridZ;
     const uint32_t world_seed, chunk_seed;
 
-    void createMesh();
-    void createMeshAsync();
-    std::shared_ptr<xe::Model> getMesh();
-
-    uint8_t getBlock(int32_t x, int32_t y, int32_t z);
-    void setBlock(int32_t x, int32_t y, int32_t z, uint8_t block);
-
-    static Chunk* getChunk(int32_t x, int32_t z);
-
   private:
 
+    Chunk(int32_t gridX, int32_t gridZ, uint32_t world_seed);
+    ~Chunk();
+
     void generate();
-    void addVerticies(uint8_t side, int32_t x, int32_t y, int32_t z, uint8_t block);
+    static void addVerticies(Chunk* c, uint8_t side, int32_t x, int32_t y, int32_t z, uint8_t block);
 
     bool reloadRequired{false};
     bool working{false};
 
-    std::shared_ptr<xe::Model> chunkMesh;
+    xe::Model* chunkMesh;
     xe::Model::Data vertexData;
     std::vector<uint8_t> cubes;
     std::thread worker;

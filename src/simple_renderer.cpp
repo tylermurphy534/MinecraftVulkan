@@ -1,4 +1,5 @@
 #include "simple_renderer.hpp"
+#include "chunk.hpp"
 
 namespace app {
 
@@ -18,8 +19,6 @@ SimpleRenderer::SimpleRenderer(xe::Engine &xeEngine, std::vector<xe::Image*> &im
 
 void SimpleRenderer::render(std::vector<xe::GameObject> &gameObjects, xe::Camera &xeCamera) {
 
-  // xeRenderSystem->loadTexture(1, xeImage);
-
   xeRenderSystem->start();
 
   UniformBuffer ubo{};
@@ -30,6 +29,10 @@ void SimpleRenderer::render(std::vector<xe::GameObject> &gameObjects, xe::Camera
     PushConstant pc{};
     pc.modelMatrix = obj.transform.mat4();
     pc.normalMatrix = obj.transform.normalMatrix();
+
+    Chunk* chunk = Chunk::getChunk(obj.transform.translation.x/16.f, obj.transform.translation.z/16.f);
+    obj.model = chunk->getMesh();
+
     xeRenderSystem->loadPushConstant(&pc);
     xeRenderSystem->render(obj);
   }

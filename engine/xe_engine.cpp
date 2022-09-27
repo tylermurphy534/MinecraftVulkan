@@ -32,18 +32,18 @@ void Engine::loadDescriptorPool() {
     .build();
 }
 
-std::shared_ptr<Model> Engine::loadModelFromFile(const std::string &filename) {
+Model* Engine::loadModelFromFile(const std::string &filename) {
   return Model::createModelFromFile(xeDevice, filename);
 }
 
-std::shared_ptr<Model> Engine::loadModelFromData(std::vector<unsigned char> vertexData, uint32_t vertexSize, std::vector<uint32_t> indices) {
+Model* Engine::loadModelFromData(std::vector<unsigned char> vertexData, uint32_t vertexSize, std::vector<uint32_t> indices) {
   Model::Builder builder{};
   builder.vertexData.data = vertexData;
   builder.vertexSize = vertexSize;
   if(indices.size() > 0) { 
     builder.indices = indices;
   }
-  return std::make_shared<Model>(xeDevice, builder);
+  return new Model(xeDevice, builder);
 }
 
 Image* Engine::loadImageFromFile(const std::string &filename, bool anisotropic) {

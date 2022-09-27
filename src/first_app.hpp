@@ -32,8 +32,6 @@ class FirstApp {
     static constexpr int WIDTH = 800;
     static constexpr int HEIGHT = 600;
 
-    void loadGameObjects();
-
     xe::Engine xeEngine;
 
     std::vector<xe::GameObject> gameObjects;

@@ -40,7 +40,7 @@ class Model {
     Model(const Model &) = delete;
     Model operator=(const Model &) = delete;
 
-    static std::unique_ptr<Model> createModelFromFile(Device &device, const std::string &filepath);
+    static Model* createModelFromFile(Device &device, const std::string &filepath);
     
     void bind(VkCommandBuffer commandBuffer);
     void draw(VkCommandBuffer commandBuffer);

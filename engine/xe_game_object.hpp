@@ -37,8 +37,7 @@ class GameObject {
 
     id_t getId() { return id; }
 
-    std::shared_ptr<Model> model{};
-    // glm::vec3 color{};
+    Model* model{};
     TransformComponent transform;
 
   private:

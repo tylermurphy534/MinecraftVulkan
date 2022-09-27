@@ -7,6 +7,7 @@
 #include "xe_image.hpp"
 #include "xe_input.hpp"
 #include "xe_sound.hpp"
+#include "xe_model.hpp"
 
 #include <chrono> 
 #include <string>
@@ -31,8 +32,8 @@ class Engine {
     Camera& getCamera() {return xeCamera;}
     Device& getDevice() {return xeDevice;}
 
-    std::shared_ptr<Model> loadModelFromFile(const std::string &filename);
-    std::shared_ptr<Model> loadModelFromData(std::vector<unsigned char> vertexData, uint32_t vertexSize, std::vector<uint32_t> indices);
+    Model* loadModelFromFile(const std::string &filename);
+    Model* loadModelFromData(std::vector<unsigned char> vertexData, uint32_t vertexSize, std::vector<uint32_t> indices);
     Image* loadImageFromFile(const std::string &filename, bool anisotropic = true);
     
     bool beginFrame() { return xeRenderer.beginFrame(); }
