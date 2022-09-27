@@ -12,7 +12,7 @@ namespace xe {
     
 class Window {
   public:
-    Window(int w, int h, std::string name);
+    Window(int w, int h, std::string name, const char *icon);
     ~Window();
 
     Window(const Window &) = delete;
@@ -29,6 +29,7 @@ class Window {
   private:
     static void framebufferResizeCallback(GLFWwindow *window, int width, int height);
     void initWindow();  
+    void setIcon(const char *icon);
     
     int width;
     int height;

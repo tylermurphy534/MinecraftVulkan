@@ -3,7 +3,7 @@
 
 namespace app {
 
-FirstApp::FirstApp() : xeEngine{WIDTH, HEIGHT, "Xenon Vulkan Engine"} {};
+FirstApp::FirstApp() : xeEngine{WIDTH, HEIGHT, "Minecraft Vulkan", "res/image/icon.png"} {};
 
 FirstApp::~FirstApp() {}
 
@@ -20,7 +20,7 @@ void FirstApp::run() {
   sound.play();
     
   auto viewerObject = xe::GameObject::createGameObject();
-  viewerObject.transform.translation = {-7.f, 3.f, -7.f};
+  viewerObject.transform.translation = {0.f, 10.f, 0.f};
   viewerObject.transform.rotation.y = glm::radians(45.f);
   KeyboardMovementController cameraController{xeEngine.getInput(), viewerObject};
 

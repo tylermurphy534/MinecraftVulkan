@@ -8,7 +8,7 @@ Engine* Engine::getInstance() {
   return _instance;
 }
 
-Engine::Engine(int width, int height, std::string name) : xeWindow{width, height, name}, 
+Engine::Engine(int width, int height, std::string name, const char *icon) : xeWindow{width, height, name, icon}, 
   xeDevice{xeWindow}, 
   xeRenderer{xeWindow, xeDevice},
   xeCamera{},

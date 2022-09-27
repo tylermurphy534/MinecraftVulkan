@@ -1,9 +1,11 @@
 #include "xe_window.hpp"
+#include "stb_image.h"
 
 namespace xe {
 
-  Window::Window(int w, int h, std::string name) : width{w}, height{h}, windowName{name} {
+  Window::Window(int w, int h, std::string name, const char *icon) : width{w}, height{h}, windowName{name} {
     initWindow();
+    setIcon(icon);
   }
 
   Window::~Window() {
@@ -19,6 +21,14 @@ namespace xe {
     window = glfwCreateWindow(width, height, windowName.c_str(), nullptr, nullptr);
     glfwSetWindowUserPointer(window, this);
     glfwSetFramebufferSizeCallback(window, framebufferResizeCallback);
+  }
+
+  void Window::setIcon(const char *icon) {
+    if(icon == NULL) return;
+    GLFWimage images[1]; 
+    images[0].pixels = stbi_load(icon, &images[0].width, &images[0].height, 0, 4); //rgba channels 
+    glfwSetWindowIcon(window, 1, images); 
+    stbi_image_free(images[0].pixels);
   }
 
   void Window::createWindowSurface(VkInstance instance, VkSurfaceKHR *surface){
