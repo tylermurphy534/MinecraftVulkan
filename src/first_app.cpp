@@ -78,11 +78,10 @@ void FirstApp::reloadLoadedChunks(xe::GameObject& viewer) {
       Chunk* chunk = Chunk::getChunk(newGridX, newGridZ);
       if(chunk == nullptr) {
         chunk = Chunk::newChunk(newGridX, newGridZ, 12345);
+        Chunk::generateAsync(chunk);
+      }
+      if(chunk->getMesh() == nullptr){
         Chunk::createMeshAsync(chunk);
-        Chunk::createMeshAsync(Chunk::getChunk(newGridX+1, newGridZ));
-        Chunk::createMeshAsync(Chunk::getChunk(newGridX-1, newGridZ));
-        Chunk::createMeshAsync(Chunk::getChunk(newGridX, newGridZ+1));
-        Chunk::createMeshAsync(Chunk::getChunk(newGridX, newGridZ-1));
       }
       gameObject.model = chunk->getMesh();
       gameObject.transform.translation = glm::vec3(newGridX * 16.f, 0, newGridZ * 16.f);

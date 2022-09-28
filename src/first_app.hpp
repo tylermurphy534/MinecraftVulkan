@@ -32,7 +32,7 @@ class FirstApp {
   
     static constexpr int WIDTH = 800;
     static constexpr int HEIGHT = 600;
-    static constexpr int RENDER_DISTANCE = 10;
+    static constexpr int RENDER_DISTANCE = 15;
 
     void createGameObjects(xe::GameObject& viewer);
     void reloadLoadedChunks(xe::GameObject& viewer);

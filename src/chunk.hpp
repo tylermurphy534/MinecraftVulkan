@@ -44,9 +44,14 @@ class Chunk {
     static void createMesh(Chunk* c);
     static void createMeshAsync(Chunk* c);
 
+    static void generate(Chunk* c);
+    static void generateAsync(Chunk* c);
+
     xe::Model* getMesh();
     uint8_t getBlock(int32_t x, int32_t y, int32_t z);
     void setBlock(int32_t x, int32_t y, int32_t z, uint8_t block);
+
+    static bool isGenerated(int32_t gridX, int32_t gridZ);
 
     const int32_t gridX, gridZ;
     const uint32_t world_seed, chunk_seed;
@@ -56,10 +61,10 @@ class Chunk {
     Chunk(int32_t gridX, int32_t gridZ, uint32_t world_seed);
     ~Chunk();
 
-    void generate();
     static void addVerticies(Chunk* c, uint8_t side, int32_t x, int32_t y, int32_t z, uint8_t block);
 
-    bool reloadRequired{false};
+    bool generated{false};
+    bool reload{false};
     bool working{false};
 
     xe::Model* chunkMesh;

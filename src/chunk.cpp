@@ -12,7 +12,6 @@ Chunk::Chunk(int32_t gridX, int32_t gridZ, uint32_t world_seed)
     gridX{gridX},
     gridZ{gridZ} {
   chunkMesh = nullptr;
-  generate();
 }
 
 Chunk::~Chunk() {
@@ -98,6 +97,7 @@ void Chunk::unload() {
 void Chunk::createMeshAsync(Chunk* c) {
   if(c == nullptr) return;
   if(c->working) return;
+  c->working = true;
   if(c->worker.joinable())
     c->worker.join();
   c->worker = std::thread(createMesh, c);
@@ -105,6 +105,13 @@ void Chunk::createMeshAsync(Chunk* c) {
 
 void Chunk::createMesh(Chunk* c) {
   if(c == nullptr) return;
+  if(!isGenerated(c->gridX-1, c->gridZ) ||
+     !isGenerated(c->gridX+1, c->gridZ) ||
+     !isGenerated(c->gridX, c->gridZ-1) ||
+     !isGenerated(c->gridX, c->gridZ+1)) {
+    c->working = false;
+    return;
+  }
   c->vertexData.data.clear();
   for(int32_t x=0;x<16;x++) {
     for(int32_t y=0; y<256; y++) {
@@ -132,8 +139,8 @@ void Chunk::createMesh(Chunk* c) {
       }
     }
   }
+  c->reload = true;
   c->working = false;
-  c->reloadRequired = true;
 }
 
 void Chunk::addVerticies(Chunk* c, uint8_t side, int32_t x, int32_t y, int32_t z, uint8_t block) {
@@ -151,11 +158,47 @@ void Chunk::addVerticies(Chunk* c, uint8_t side, int32_t x, int32_t y, int32_t z
 }
 
 //
+//  CHUNK GENERATION FOR BOTH SYNC AND ASYNC
+//
+
+void Chunk::generateAsync(Chunk* c) {
+  if(c == nullptr) return;
+  if(c->working) return;
+  c->working = true;
+  if(c->worker.joinable())
+    c->worker.join();
+  c->worker = std::thread(generate, c);
+}
+
+void Chunk::generate(Chunk* c) {
+  c->cubes.resize(16*16*256);
+  
+  const PerlinNoise perlin{c->world_seed};
+
+  for(int x = 0; x < 16; x++) {
+    for(int z = 0; z < 16; z++) {
+      int height = perlin.octave2D_01((( x + c->gridX * 16) * 0.01), ((z + c->gridZ * 16) * 0.01), 4) * 20;
+      for(int y = 0; y < 256; y++) {
+        if(y == height){
+          c->setBlock(x, y, z, GRASS);
+        } else if(y < height)
+          c->setBlock(x, y, z, DIRT);
+        else
+          c->setBlock(x, y, z, AIR);
+      }
+    }
+  }
+
+  c->generated = true;
+  c->working = false;
+}
+
+//
 //  CHUNK GETTERS AND SETTORS
 //
 
 xe::Model* Chunk::getMesh() {
-  if(reloadRequired) {
+  if(reload) {
     if(chunkMesh != nullptr) {
       xe::Model::deleteModel(chunkMesh);
       chunkMesh = nullptr;
@@ -166,7 +209,8 @@ xe::Model* Chunk::getMesh() {
     builder.vertexData = vertexData;
     builder.vertexSize = 36;
     chunkMesh = xe::Model::createModel(builder);
-    reloadRequired = false;
+    vertexData.data.clear();
+    reload = false;
   }
   return chunkMesh;
 }
@@ -207,28 +251,10 @@ void Chunk::setBlock(int32_t x, int32_t y, int32_t z, uint8_t block) {
   cubes[index] = block;
 }
 
-//
-//  CHUNK GENERATION
-//
-
-void Chunk::generate() {
-  cubes.resize(16*16*256);
-  
-  const PerlinNoise perlin{world_seed};
-
-  for(int x = 0; x < 16; x++) {
-    for(int z = 0; z < 16; z++) {
-      int height = perlin.octave2D_01((( x + gridX * 16) * 0.01), ((z + gridZ * 16) * 0.01), 4) * 20;
-      for(int y = 0; y < 256; y++) {
-        if(y == height){
-          setBlock(x, y, z, GRASS);
-        } else if(y < height)
-          setBlock(x, y, z, DIRT);
-        else
-          setBlock(x, y, z, AIR);
-      }
-    }
-  }
+bool Chunk::isGenerated(int32_t gridX, int32_t gridZ) {
+  Chunk* chunk = Chunk::getChunk(gridX, gridZ);
+  if(chunk == nullptr) return false;
+  return chunk->generated;
 }
 
 }
