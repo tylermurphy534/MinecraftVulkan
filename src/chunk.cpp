@@ -18,8 +18,7 @@ Chunk::Chunk(int32_t gridX, int32_t gridZ, uint32_t world_seed)
 Chunk::~Chunk() {
   if(worker.joinable())
     worker.join();
-  if(chunkMesh != nullptr)
-    delete chunkMesh;
+  xe::Model::deleteModel(chunkMesh);
 }
 
 //
@@ -155,8 +154,10 @@ void Chunk::addVerticies(Chunk* c, uint8_t side, int32_t x, int32_t y, int32_t z
 
 xe::Model* Chunk::getMesh() {
   if(reloadRequired) {
-    if(chunkMesh != nullptr)
-      delete chunkMesh;
+    if(chunkMesh != nullptr) {
+      xe::Model::deleteModel(chunkMesh);
+      chunkMesh = nullptr;
+    }
     if(worker.joinable())
       worker.join();
     xe::Model::Builder builder{};

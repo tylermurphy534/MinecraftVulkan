@@ -155,4 +155,21 @@ void Model::Builder::loadModel(const std::string &filepath) {
 
 }
 
+static std::vector<Model*> deleteQueue{};
+
+void Model::deleteModel(Model* model) {
+  deleteQueue.push_back(model);
+}
+
+void Model::submitDeleteQueue() {
+  for(Model* model : deleteQueue) {
+    if(model == nullptr) return;
+    try {
+      delete model;
+    } catch (int err) {}
+  }
+  deleteQueue.clear();
+}
+
+
 }

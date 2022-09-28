@@ -2,6 +2,7 @@
 
 #include "xe_device.hpp"
 #include "xe_image.hpp"
+#include "xe_model.hpp"
 
 #include <vulkan/vulkan.h>
 

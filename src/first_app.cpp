@@ -73,8 +73,8 @@ void FirstApp::reloadLoadedChunks(xe::GameObject& viewer) {
       int gridZ = static_cast<int>(floor(gameObject.transform.translation.z / 16.f));
       int newGridX = minX + x;
       int newGridZ = minZ + z;
-      if(gridX < minX || gridZ < minZ || gridX > maxX || gridZ > maxZ)
-        Chunk::deleteChunk(gridX, gridZ);
+      // if(gridX < minX || gridZ < minZ || gridX > maxX || gridZ > maxZ)
+      //   Chunk::deleteChunk(gridX, gridZ);
       Chunk* chunk = Chunk::getChunk(newGridX, newGridZ);
       if(chunk == nullptr) {
         chunk = Chunk::newChunk(newGridX, newGridZ, 12345);

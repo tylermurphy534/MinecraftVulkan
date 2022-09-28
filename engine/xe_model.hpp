@@ -41,6 +41,8 @@ class Model {
     Model operator=(const Model &) = delete;
 
     static Model* createModelFromFile(const std::string &filepath);
+    static void deleteModel(Model* model);
+    static void submitDeleteQueue();
     
     void bind(VkCommandBuffer commandBuffer);
     void draw(VkCommandBuffer commandBuffer);

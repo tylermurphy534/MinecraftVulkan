@@ -87,6 +87,9 @@ VkResult SwapChain::submitCommandBuffers(
   if (imagesInFlight[*imageIndex] != VK_NULL_HANDLE) {
     vkWaitForFences(device.device(), 1, &imagesInFlight[*imageIndex], VK_TRUE, UINT64_MAX);
   }
+
+  Model::submitDeleteQueue();
+
   imagesInFlight[*imageIndex] = inFlightFences[currentFrame];
 
   VkSubmitInfo submitInfo = {};
@@ -104,6 +107,8 @@ VkResult SwapChain::submitCommandBuffers(
   VkSemaphore signalSemaphores[] = {renderFinishedSemaphores[currentFrame]};
   submitInfo.signalSemaphoreCount = 1;
   submitInfo.pSignalSemaphores = signalSemaphores;
+
+
 
   vkResetFences(device.device(), 1, &inFlightFences[currentFrame]);
   if (vkQueueSubmit(device.graphicsQueue(), 1, &submitInfo, inFlightFences[currentFrame]) !=
