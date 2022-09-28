@@ -59,7 +59,7 @@ void Renderer::freeCommandBuffers() {
 }
 
 VkCommandBuffer Renderer::beginFrame() {
-  assert(!isFrameStarted && "Can't acll beingFrame while already in progress");
+  assert(!isFrameStarted && "Can't call beingFrame while already in progress");
 
   auto result = xeSwapChain->acquireNextImage(&currentImageIndex);
 

@@ -19,6 +19,8 @@ Chunk::~Chunk() {
   if(worker.joinable())
     worker.join();
   xe::Model::deleteModel(chunkMesh);
+  vertexData.data.clear();
+  cubes.clear();
 }
 
 //
@@ -216,7 +218,7 @@ void Chunk::generate() {
 
   for(int x = 0; x < 16; x++) {
     for(int z = 0; z < 16; z++) {
-      int height = perlin.octave2D_01((( x + gridX * 16) * 0.01), ((z + gridZ * 16) * 0.01), 4) * 10;
+      int height = perlin.octave2D_01((( x + gridX * 16) * 0.01), ((z + gridZ * 16) * 0.01), 4) * 20;
       for(int y = 0; y < 256; y++) {
         if(y == height){
           setBlock(x, y, z, GRASS);
