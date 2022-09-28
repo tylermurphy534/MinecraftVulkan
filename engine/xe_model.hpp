@@ -34,20 +34,24 @@ class Model {
       void loadModel(const std::string &filepath);
     };
 
-    Model(const Model::Builder &builder);
+    static Model* createModel(const std::string &filepath);
+    static Model* createModel(Builder& builder);
+    static void deleteModel(Model* model);
+
     ~Model();
 
     Model(const Model &) = delete;
     Model operator=(const Model &) = delete;
-
-    static Model* createModelFromFile(const std::string &filepath);
-    static void deleteModel(Model* model);
-    static void submitDeleteQueue();
     
     void bind(VkCommandBuffer commandBuffer);
     void draw(VkCommandBuffer commandBuffer);
 
   private:
+
+    static void submitDeleteQueue(bool purge);
+
+    Model(const Model::Builder &builder);
+
     void createVertexBuffers(const std::vector<unsigned char> &vertexData, uint32_t vertexSize);
     void createIndexBuffers(const std::vector<uint32_t> &indexData);
 
@@ -59,6 +63,9 @@ class Model {
     bool hasIndexBuffer = false;
     std::unique_ptr<Buffer> indexBuffer;
     uint32_t indexCount;
+
+    friend class SwapChain;
+    friend class Engine;
 };
 
 }

@@ -11,6 +11,10 @@
 
 namespace xe {
 
+//
+//  CONSTRUCTORS AND DECONSTUCTORS
+//
+
 Image::Image(const std::string &filename, bool anisotropic) : xeDevice{Engine::getInstance()->xeDevice} {
   createTextureImage(filename);
   createTextureImageView();
@@ -23,6 +27,43 @@ Image::~Image() {
   vkFreeMemory(xeDevice.device(), textureImageMemory, nullptr);
   vkDestroyImageView(xeDevice.device(), textureImageView, nullptr);
 }
+
+//
+//  LOADERS AND DELETORS
+//
+
+static std::set<Image*> CREATED_IMAGES{};
+static std::set<Image*> DELETION_QUEUE{};
+
+Image* Image::createImage(const std::string &filename, bool anisotropic) {
+  Image* image = new Image(filename, anisotropic);
+  CREATED_IMAGES.insert(image);
+  return image;
+}
+
+void Image::deleteImage(Image* image) {
+  if(CREATED_IMAGES.count(image)) {
+    CREATED_IMAGES.erase(image);
+    DELETION_QUEUE.insert(image);
+  }
+}
+
+void Image::submitDeleteQueue(bool purge) {
+  for(Image* image: DELETION_QUEUE) {
+    try { delete image; } catch(int err) {};
+  }
+  DELETION_QUEUE.clear();
+  if (purge) {
+    for(Image* image: CREATED_IMAGES) {
+      try { delete image; } catch(int err) {};
+    }
+    CREATED_IMAGES.clear();
+  }
+}
+
+//
+//  IMAGE CREATION FUNCTIONS
+//
 
 void Image::createTextureImage(const std::string &filename) {
   int texWidth, texHeight, texChannels;
@@ -243,6 +284,10 @@ void Image::createTextureSampler(bool anisotropic) {
   }
 }
 
+//
+//  STATIC CREATE IMAGE
+//
+
 void Image::createImage(Device& device, uint32_t width, uint32_t height, uint32_t mipLevels, VkSampleCountFlagBits numSamples, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory) {
     
     VkImageCreateInfo imageInfo{};
@@ -278,6 +323,10 @@ void Image::createImage(Device& device, uint32_t width, uint32_t height, uint32_
 
     vkBindImageMemory(device.device(), image, imageMemory, 0);
 }
+
+//
+//  STATIC CREATE IMAGE VIEW
+//
 
 VkImageView Image::createImageView(Device& device, VkImage image, VkFormat format, VkImageAspectFlags aspectFlags, uint32_t mipLevels) {
   VkImageViewCreateInfo viewInfo{};

@@ -88,7 +88,8 @@ VkResult SwapChain::submitCommandBuffers(
     vkWaitForFences(device.device(), 1, &imagesInFlight[*imageIndex], VK_TRUE, UINT64_MAX);
   }
 
-  Model::submitDeleteQueue();
+  Model::submitDeleteQueue(false);
+  Image::submitDeleteQueue(false);
 
   imagesInFlight[*imageIndex] = inFlightFences[currentFrame];
 

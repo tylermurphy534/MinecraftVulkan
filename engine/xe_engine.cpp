@@ -20,7 +20,8 @@ Engine::Engine(int width, int height, std::string name, const char *icon) : xeWi
 };
 
 Engine::~Engine() {
-  xe::Model::submitDeleteQueue();
+  Model::submitDeleteQueue(true);
+  Image::submitDeleteQueue(true);
   alutExit();
 };
 

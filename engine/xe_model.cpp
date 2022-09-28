@@ -14,6 +14,10 @@
 
 namespace xe {
 
+//
+//  CONSTRUCTORS AND DECONSTUCTORS
+//
+
 Model::Model(const Model::Builder &builder) : xeDevice{Engine::getInstance()->xeDevice} {
   createVertexBuffers(builder.vertexData.data, builder.vertexSize);
   createIndexBuffers(builder.indices);
@@ -21,11 +25,48 @@ Model::Model(const Model::Builder &builder) : xeDevice{Engine::getInstance()->xe
 
 Model::~Model() {}
 
-Model* Model::createModelFromFile(const std::string &filepath) {
+//
+//  LOADERS AND DELETORS
+//
+
+static std::set<Model*> CREATED_MODELS{};
+static std::set<Model*> DELETION_QUEUE{};
+
+Model* Model::createModel(const std::string &filepath) {
   Builder builder{};
   builder.loadModel(filepath);
-  return new Model(builder);
+  return createModel(builder);
 }
+
+Model* Model::createModel(Builder& builder) {
+  Model* model = new Model(builder);
+  CREATED_MODELS.insert(model);
+  return model;
+}
+
+void Model::deleteModel(Model* model) {
+  if(CREATED_MODELS.count(model)) {
+    CREATED_MODELS.erase(model);
+    DELETION_QUEUE.insert(model);
+  }
+}
+
+void Model::submitDeleteQueue(bool purge) {
+  for(Model* model: DELETION_QUEUE) {
+    try { delete model; } catch(int err) {};
+  }
+  DELETION_QUEUE.clear();
+  if (purge) {
+    for(Model* model: CREATED_MODELS) {
+      try { delete model; } catch(int err) {};
+    }
+    CREATED_MODELS.clear();
+  }
+}
+
+//
+//  MODEL CREATION FUNCTIONS
+//
 
 void Model::createVertexBuffers(const std::vector<unsigned char> &vertexData, uint32_t vertexSize) {
   vertexCount = static_cast<uint32_t>(vertexData.size()) / vertexSize;
@@ -154,22 +195,5 @@ void Model::Builder::loadModel(const std::string &filepath) {
     vertexSize += 8;
 
 }
-
-static std::vector<Model*> deleteQueue{};
-
-void Model::deleteModel(Model* model) {
-  deleteQueue.push_back(model);
-}
-
-void Model::submitDeleteQueue() {
-  for(Model* model : deleteQueue) {
-    if(model == nullptr) return;
-    try {
-      delete model;
-    } catch (int err) {}
-  }
-  deleteQueue.clear();
-}
-
 
 }

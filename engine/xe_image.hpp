@@ -3,6 +3,7 @@
 #include "xe_device.hpp"
 
 #include <string>
+#include <set>
 
 namespace xe {
   
@@ -10,13 +11,19 @@ class Image {
 
   public:
   
-    Image(const std::string &filename, bool anisotropic);
+    static Image* createImage(const std::string &filename, bool anisotropic);
+    static void deleteImage(Image* image);
+
     ~Image();
 
     Image(const Image&) = delete;
     Image operator=(const Image&) = delete;
 
   private:
+
+    static void submitDeleteQueue(bool purge);
+
+    Image(const std::string &filename, bool anisotropic);
 
     void createTextureImage(const std::string &filename);
     void transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
@@ -38,6 +45,7 @@ class Image {
 
     friend class RenderSystem;
     friend class SwapChain;
+    friend class Engine;
 
 };
 

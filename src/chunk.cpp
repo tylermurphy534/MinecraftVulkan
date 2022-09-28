@@ -57,7 +57,7 @@ static std::map<std::string, uint32_t> texturesIds{};
 static std::vector<xe::Image*> textures{};
 
 void loadTexture(const std::string& filePath) {
-  xe::Image* image = new xe::Image(filePath, false);
+  xe::Image* image = xe::Image::createImage(filePath, false);
   texturesIds[filePath] = static_cast<uint32_t>(textures.size());
   textures.push_back(image);
 }
@@ -80,7 +80,7 @@ void Chunk::load() {
 
 void Chunk::unload() {
   for(const auto &image: textures) {
-    delete image;
+    xe::Image::deleteImage(image);
   }
   for(const auto &[key, chunk]: chunks) {
     delete chunk;
@@ -163,7 +163,7 @@ xe::Model* Chunk::getMesh() {
     xe::Model::Builder builder{};
     builder.vertexData = vertexData;
     builder.vertexSize = 36;
-    chunkMesh = new xe::Model(builder);
+    chunkMesh = xe::Model::createModel(builder);
     reloadRequired = false;
   }
   return chunkMesh;
