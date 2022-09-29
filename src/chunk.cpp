@@ -232,6 +232,7 @@ xe::Model* Chunk::getMesh() {
 }
 
 uint8_t Chunk::getBlock(int32_t x, int32_t y, int32_t z) {
+  if(!generated) return INVALID;
   if(y > 256) return AIR;
   if(y < 0) return INVALID;
   int chunkX = gridX;
@@ -263,6 +264,7 @@ uint8_t Chunk::getBlock(int32_t x, int32_t y, int32_t z) {
 }
 
 void Chunk::setBlock(int32_t x, int32_t y, int32_t z, uint8_t block) {
+  if(!generated) return;
   int index = x + (z * 16) + (y * 256);
   cubes[index] = block;
 }
