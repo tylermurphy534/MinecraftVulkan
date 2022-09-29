@@ -13,15 +13,27 @@
 #include <memory>
 #include <string>
 #include <map>
+#include <algorithm>
 
 #define INVALID             -1
 #define AIR                 0
 #define DIRT                1
 #define GRASS               2
+#define GREEN               3
+#define STONE               4
+#define SNOW                5
+#define SAND                6
+#define WATER               7
 
 #define DIRT_TEXTURE        "res/image/dirt.png"
 #define GRASS_TEXTURE       "res/image/grass.png"
 #define GRASS_TOP_TEXTURE   "res/image/grass_top.png"
+#define STONE_TEXTURE       "res/image/stone.png"
+#define SNOW_TEXTURE        "res/image/snow.png"
+#define SAND_TEXTURE        "res/image/sand.png"
+#define WATER_TEXTURE       "res/image/water.png"
+
+static constexpr int WATER_LEVEL = 20;
 
 namespace app {
 

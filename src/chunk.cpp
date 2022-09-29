@@ -57,13 +57,12 @@ static std::map<uint8_t, Block> blocks{};
 static std::map<std::string, uint32_t> texturesIds{};
 static std::vector<xe::Image*> textures{};
 
-void loadTexture(const std::string& filePath) {
-  xe::Image* image = xe::Image::createImage(filePath, false);
-  texturesIds[filePath] = static_cast<uint32_t>(textures.size());
-  textures.push_back(image);
-}
-
 uint32_t getTexture(const std::string& filePath) {
+  if(!texturesIds.count(filePath)) {
+    xe::Image* image = xe::Image::createImage(filePath, false);
+    texturesIds[filePath] = static_cast<uint32_t>(textures.size());
+    textures.push_back(image);
+  }
   return texturesIds[filePath];
 }
 
@@ -72,11 +71,13 @@ std::vector<xe::Image*>& Chunk::getTextures() {
 }
 
 void Chunk::load() {
-  loadTexture(DIRT_TEXTURE);
-  loadTexture(GRASS_TEXTURE);
-  loadTexture(GRASS_TOP_TEXTURE);
   blocks[DIRT] = {{getTexture(DIRT_TEXTURE), getTexture(DIRT_TEXTURE), getTexture(DIRT_TEXTURE), getTexture(DIRT_TEXTURE), getTexture(DIRT_TEXTURE), getTexture(DIRT_TEXTURE)}};
   blocks[GRASS] = {{getTexture(GRASS_TEXTURE), getTexture(GRASS_TEXTURE), getTexture(GRASS_TOP_TEXTURE), getTexture(DIRT_TEXTURE), getTexture(GRASS_TEXTURE), getTexture(GRASS_TEXTURE)}};
+  blocks[GREEN] = {{getTexture(GRASS_TOP_TEXTURE), getTexture(GRASS_TOP_TEXTURE), getTexture(GRASS_TOP_TEXTURE), getTexture(GRASS_TOP_TEXTURE), getTexture(GRASS_TOP_TEXTURE), getTexture(GRASS_TOP_TEXTURE)}};
+  blocks[STONE] = {{getTexture(STONE_TEXTURE), getTexture(STONE_TEXTURE), getTexture(STONE_TEXTURE), getTexture(STONE_TEXTURE), getTexture(STONE_TEXTURE), getTexture(STONE_TEXTURE)}};
+  blocks[SNOW] = {{getTexture(SNOW_TEXTURE), getTexture(SNOW_TEXTURE), getTexture(SNOW_TEXTURE), getTexture(SNOW_TEXTURE), getTexture(SNOW_TEXTURE), getTexture(SNOW_TEXTURE)}};
+  blocks[SAND] = {{getTexture(SAND_TEXTURE), getTexture(SAND_TEXTURE), getTexture(SAND_TEXTURE), getTexture(SAND_TEXTURE), getTexture(SAND_TEXTURE), getTexture(SAND_TEXTURE)}};
+  blocks[WATER] = {{getTexture(WATER_TEXTURE), getTexture(WATER_TEXTURE), getTexture(WATER_TEXTURE), getTexture(WATER_TEXTURE), getTexture(WATER_TEXTURE), getTexture(WATER_TEXTURE)}};
 }
 
 void Chunk::unload() {
@@ -177,14 +178,25 @@ void Chunk::generate(Chunk* c) {
 
   for(int x = 0; x < 16; x++) {
     for(int z = 0; z < 16; z++) {
-      int height = perlin.octave2D_01((( x + c->gridX * 16) * 0.01), ((z + c->gridZ * 16) * 0.01), 4) * 20;
-      for(int y = 0; y < 256; y++) {
-        if(y == height){
-          c->setBlock(x, y, z, GRASS);
-        } else if(y < height)
+      double noise = perlin.octave2D_01((( x + c->gridX * 16) * 0.01), ((z + c->gridZ * 16) * 0.01), 4);
+      int height = noise * 40;
+      for(int y = 0; y < std::max(height, WATER_LEVEL); y++) {
+        int difference = y - WATER_LEVEL;
+        if (difference < 0) {
+          c->setBlock(x, y, z, WATER);
+        } else if(difference < 3) {
+          c->setBlock(x, y, z, SAND);
+        } else if(difference < 5) {
           c->setBlock(x, y, z, DIRT);
-        else
-          c->setBlock(x, y, z, AIR);
+        } else if(difference < 6) {
+          c->setBlock(x, y, z, GRASS);
+        } else if(difference < 10) {
+          c->setBlock(x, y, z, GREEN);
+        } else if(difference < 16) {
+          c->setBlock(x, y, z, STONE);
+        } else if(difference < 18) {
+          c->setBlock(x, y, z, SNOW);
+        }
       }
     }
   }
