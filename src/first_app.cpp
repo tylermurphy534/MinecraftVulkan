@@ -18,9 +18,9 @@ void FirstApp::run() {
 
   SimpleRenderer renderer{xeEngine, Chunk::getTextures()};
 
-  // xe::Sound sound{"res/sound/when_the_world_ends.wav"};
-  // sound.setLooping(true);
-  // sound.play();
+  xe::Sound sound{"res/sound/when_the_world_ends.wav"};
+  sound.setLooping(true);
+  sound.play();
     
   KeyboardMovementController cameraController{xeEngine.getInput(), viewerObject};
 
