@@ -19,11 +19,13 @@
 #define AIR                 0
 #define DIRT                1
 #define GRASS               2
-#define GREEN               3
+#define FULL_GRASS          3
 #define STONE               4
 #define SNOW                5
 #define SAND                6
 #define WATER               7
+#define SHRUB               8
+#define FULL_SHRUB          9
 
 #define DIRT_TEXTURE        "res/image/dirt.png"
 #define GRASS_TEXTURE       "res/image/grass.png"
@@ -32,6 +34,8 @@
 #define SNOW_TEXTURE        "res/image/snow.png"
 #define SAND_TEXTURE        "res/image/sand.png"
 #define WATER_TEXTURE       "res/image/water.png"
+#define SHRUB_TEXTURE       "res/image/shrub.png"
+#define SHRUB_TOP_TEXTURE   "res/image/shrub_top.png"
 
 static constexpr int WATER_LEVEL = 20;
 

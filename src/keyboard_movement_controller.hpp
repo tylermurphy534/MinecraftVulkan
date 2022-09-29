@@ -36,7 +36,7 @@ namespace app {
       xe::GameObject &viewerObject;
 
       KeyMappings keys{};
-      float moveSpeed{30.f};
+      float moveSpeed{250.f};
       float lookSpeed{1.5f};
 
   };

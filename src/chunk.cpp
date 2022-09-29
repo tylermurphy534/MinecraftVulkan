@@ -73,11 +73,13 @@ std::vector<xe::Image*>& Chunk::getTextures() {
 void Chunk::load() {
   blocks[DIRT] = {{getTexture(DIRT_TEXTURE), getTexture(DIRT_TEXTURE), getTexture(DIRT_TEXTURE), getTexture(DIRT_TEXTURE), getTexture(DIRT_TEXTURE), getTexture(DIRT_TEXTURE)}};
   blocks[GRASS] = {{getTexture(GRASS_TEXTURE), getTexture(GRASS_TEXTURE), getTexture(GRASS_TOP_TEXTURE), getTexture(DIRT_TEXTURE), getTexture(GRASS_TEXTURE), getTexture(GRASS_TEXTURE)}};
-  blocks[GREEN] = {{getTexture(GRASS_TOP_TEXTURE), getTexture(GRASS_TOP_TEXTURE), getTexture(GRASS_TOP_TEXTURE), getTexture(GRASS_TOP_TEXTURE), getTexture(GRASS_TOP_TEXTURE), getTexture(GRASS_TOP_TEXTURE)}};
+  blocks[FULL_GRASS] = {{getTexture(GRASS_TOP_TEXTURE), getTexture(GRASS_TOP_TEXTURE), getTexture(GRASS_TOP_TEXTURE), getTexture(GRASS_TOP_TEXTURE), getTexture(GRASS_TOP_TEXTURE), getTexture(GRASS_TOP_TEXTURE)}};
   blocks[STONE] = {{getTexture(STONE_TEXTURE), getTexture(STONE_TEXTURE), getTexture(STONE_TEXTURE), getTexture(STONE_TEXTURE), getTexture(STONE_TEXTURE), getTexture(STONE_TEXTURE)}};
   blocks[SNOW] = {{getTexture(SNOW_TEXTURE), getTexture(SNOW_TEXTURE), getTexture(SNOW_TEXTURE), getTexture(SNOW_TEXTURE), getTexture(SNOW_TEXTURE), getTexture(SNOW_TEXTURE)}};
   blocks[SAND] = {{getTexture(SAND_TEXTURE), getTexture(SAND_TEXTURE), getTexture(SAND_TEXTURE), getTexture(SAND_TEXTURE), getTexture(SAND_TEXTURE), getTexture(SAND_TEXTURE)}};
   blocks[WATER] = {{getTexture(WATER_TEXTURE), getTexture(WATER_TEXTURE), getTexture(WATER_TEXTURE), getTexture(WATER_TEXTURE), getTexture(WATER_TEXTURE), getTexture(WATER_TEXTURE)}};
+  blocks[SHRUB] = {{getTexture(SHRUB_TEXTURE), getTexture(SHRUB_TEXTURE), getTexture(SHRUB_TOP_TEXTURE), getTexture(DIRT_TEXTURE), getTexture(SHRUB_TEXTURE), getTexture(SHRUB_TEXTURE)}};
+  blocks[FULL_SHRUB] = {{getTexture(SHRUB_TOP_TEXTURE), getTexture(SHRUB_TOP_TEXTURE), getTexture(SHRUB_TOP_TEXTURE), getTexture(SHRUB_TOP_TEXTURE), getTexture(SHRUB_TOP_TEXTURE), getTexture(SHRUB_TOP_TEXTURE)}};
 }
 
 void Chunk::unload() {
@@ -178,8 +180,10 @@ void Chunk::generate(Chunk* c) {
 
   for(int x = 0; x < 16; x++) {
     for(int z = 0; z < 16; z++) {
+      double biome = perlin.octave2D_01((( x + c->gridX * 13) * 0.0005), ((z + c->gridZ * 13) * 0.0005), 4) * 2;
+      double continent = perlin.octave2D_01((( x + c->gridX * 16) * 0.001), ((z + c->gridZ * 16) * 0.001), 4) * 10 - 5;
       double noise = perlin.octave2D_01((( x + c->gridX * 16) * 0.01), ((z + c->gridZ * 16) * 0.01), 4);
-      int height = noise * 40;
+      int height = noise * 40 + continent;
       for(int y = 0; y < std::max(height, WATER_LEVEL); y++) {
         int difference = y - WATER_LEVEL;
         if (difference < 0) {
@@ -189,9 +193,9 @@ void Chunk::generate(Chunk* c) {
         } else if(difference < 5) {
           c->setBlock(x, y, z, DIRT);
         } else if(difference < 6) {
-          c->setBlock(x, y, z, GRASS);
+          c->setBlock(x, y, z, biome > 1 ? GRASS : SHRUB);
         } else if(difference < 10) {
-          c->setBlock(x, y, z, GREEN);
+          c->setBlock(x, y, z, biome > 1 ? FULL_GRASS : FULL_SHRUB);
         } else if(difference < 16) {
           c->setBlock(x, y, z, STONE);
         } else if(difference < 18) {
