@@ -40,9 +40,7 @@ class Engine {
     static Engine* getInstance();
 
   private:
-
-    void loadDescriptorPool();
-
+  
     Window xeWindow;
     Device xeDevice;
     Renderer xeRenderer;
@@ -53,8 +51,6 @@ class Engine {
     float frameTime;
 
     float FOV = 50.f;
-
-    std::unique_ptr<DescriptorPool> xeDescriptorPool;
 
     friend class RenderSystem;
     friend class Image;

@@ -13,7 +13,6 @@ Engine::Engine(int width, int height, std::string name, const char *icon) : xeWi
   xeRenderer{xeWindow, xeDevice},
   xeCamera{},
   xeInput{xeWindow} {
-  loadDescriptorPool();
   alutInit(0, NULL);
   std::cout << "Audio device: " << alcGetString(NULL, ALC_DEFAULT_DEVICE_SPECIFIER) << "\n";
   _instance = this;
@@ -24,15 +23,6 @@ Engine::~Engine() {
   Image::submitDeleteQueue(true);
   alutExit();
 };
-
-void Engine::loadDescriptorPool() {
-  xeDescriptorPool = DescriptorPool::Builder(xeDevice)
-    .setMaxSets(SwapChain::MAX_FRAMES_IN_FLIGHT)
-    .addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, SwapChain::MAX_FRAMES_IN_FLIGHT * 4)
-    .addPoolSize(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, SwapChain::MAX_FRAMES_IN_FLIGHT * 4)
-    .addPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, SwapChain::MAX_FRAMES_IN_FLIGHT * 4)
-    .build();
-}
 
 bool Engine::poll() {
   glfwPollEvents();

@@ -124,6 +124,7 @@ class RenderSystem {
 
   private:
   
+    void createDescriptorPool();
     void createDescriptorSetLayout();
     void createUniformBuffers();
     void createDescriptorSets();
@@ -148,7 +149,7 @@ class RenderSystem {
     
     VkPipelineLayout pipelineLayout;
     std::unique_ptr<Pipeline> xePipeline;
-    std::unique_ptr<DescriptorPool> &xeDescriptorPool;
+    std::unique_ptr<DescriptorPool> xeDescriptorPool;
     std::unique_ptr<DescriptorSetLayout> xeDescriptorSetLayout;
 
 };

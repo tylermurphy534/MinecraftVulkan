@@ -15,11 +15,11 @@ RenderSystem::RenderSystem(
   uint32_t vertexSize
 ) : xeDevice{xeEngine.xeDevice}, 
     xeRenderer{xeEngine.xeRenderer},
-    xeDescriptorPool{xeEngine.xeDescriptorPool},
     pushCunstantDataSize{pushCunstantDataSize},
     uniformBindings{uniformBindings},
     imageBindings{imageBindings},
     imageArrayBindings{imageArrayBindings} {
+  createDescriptorPool();
   createDescriptorSetLayout();
   createUniformBuffers();
   createDescriptorSets();
@@ -30,6 +30,18 @@ RenderSystem::RenderSystem(
 RenderSystem::~RenderSystem() {
   vkDestroyPipelineLayout(xeDevice.device(), pipelineLayout, nullptr);
 };
+
+void RenderSystem::createDescriptorPool() {
+  DescriptorPool::Builder builder{xeDevice};
+  builder.setMaxSets(SwapChain::MAX_FRAMES_IN_FLIGHT);
+  builder.addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, uniformBindings.size() * SwapChain::MAX_FRAMES_IN_FLIGHT);
+  uint32_t images = imageBindings.size();
+  for ( const auto &[binding, size]: imageArrayBindings) {
+    images += size.size();
+  }
+  builder.addPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, images * SwapChain::MAX_FRAMES_IN_FLIGHT);
+  xeDescriptorPool = builder.build();
+}
 
 void RenderSystem::createDescriptorSetLayout() {
   DescriptorSetLayout::Builder builder{xeDevice};
