@@ -104,7 +104,11 @@ bool DescriptorPool::allocateDescriptor(
   allocInfo.pSetLayouts = &descriptorSetLayout;
   allocInfo.descriptorSetCount = 1;
 
-  if (vkAllocateDescriptorSets(xeDevice.device(), &allocInfo, &descriptor) != VK_SUCCESS) {
+  VkResult result = vkAllocateDescriptorSets(xeDevice.device(), &allocInfo, &descriptor);
+  if (result != VK_SUCCESS) {
+    if(result == VK_ERROR_OUT_OF_POOL_MEMORY) {
+      std::cout << "[ERROR] failed to allocate descriptor set, descriptor pool out of memory" << "\n";
+    }
     return false;
   }
   return true;
@@ -173,15 +177,18 @@ DescriptorWriter &DescriptorWriter::writeImageArray(
 
   auto &bindingDescription = setLayout.bindings[binding];
   
-  VkWriteDescriptorSet write{};
-  write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-  write.descriptorType = bindingDescription.descriptorType;
-  write.dstBinding = binding;
-  write.dstArrayElement = 0;
-  write.pImageInfo = imageInfos->data();
-  write.descriptorCount = imageInfos->size();
+  for(auto &imageInfo : *imageInfos) {
+    VkWriteDescriptorSet write{};
+    write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    write.descriptorType = bindingDescription.descriptorType;
+    write.dstBinding = binding;
+    write.dstArrayElement = 0;
+    write.pImageInfo = imageInfos->data();
+    write.descriptorCount = imageInfos->size();
+    write.pBufferInfo = 0;
 
-  writes.push_back(write);
+    writes.push_back(write);
+  }
   return *this;
 }
 
