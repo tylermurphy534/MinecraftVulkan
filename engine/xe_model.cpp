@@ -52,6 +52,7 @@ void Model::deleteModel(Model* model) {
 }
 
 void Model::submitDeleteQueue(bool purge) {
+  if(DELETION_QUEUE.size() < 1) return;
   vkDeviceWaitIdle(Engine::getInstance()->xeDevice.device());
   for(Model* model: DELETION_QUEUE) {
     try { delete model; } catch(int err) {};

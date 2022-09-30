@@ -12,11 +12,13 @@ Chunk::Chunk(int32_t gridX, int32_t gridZ, uint32_t world_seed)
     gridX{gridX},
     gridZ{gridZ} {
   chunkMesh = nullptr;
+  worker = nullptr;
+  generated = false;
+  reload = false;
+  finished = false;
 }
 
 Chunk::~Chunk() {
-  if(worker.joinable())
-    worker.join();
   xe::Model::deleteModel(chunkMesh);
   vertexData.data.clear();
   cubes.clear();
@@ -99,11 +101,15 @@ void Chunk::unload() {
 
 void Chunk::createMeshAsync(Chunk* c) {
   if(c == nullptr) return;
-  if(c->working) return;
-  c->working = true;
-  if(c->worker.joinable())
-    c->worker.join();
-  c->worker = std::thread(createMesh, c);
+  if(!isGenerated(c->gridX-1, c->gridZ) ||
+     !isGenerated(c->gridX+1, c->gridZ) ||
+     !isGenerated(c->gridX, c->gridZ-1) ||
+     !isGenerated(c->gridX, c->gridZ+1)) {
+    return;
+  }
+  if(c->worker != nullptr && c->finished == false) return;
+  c->resetThread();
+  c->worker = new std::thread(createMesh, c);
 }
 
 struct FMask {
@@ -134,6 +140,8 @@ void CreateQuad(xe::Model::Data& data, FMask Mask, glm::vec3 AxisMask, glm::vec3
   const auto Normal = glm::vec3(AxisMask) * glm::vec3(Mask.normal);
   std::vector<glm::vec3> verticies = {V1, V2, V3, V4};
 
+  if(Mask.block == AIR || Mask.block == INVALID) return;
+
   float uv[4][2];
   
   if(AxisMask.x == 1) {
@@ -163,9 +171,10 @@ void Chunk::createMesh(Chunk* c) {
      !isGenerated(c->gridX+1, c->gridZ) ||
      !isGenerated(c->gridX, c->gridZ-1) ||
      !isGenerated(c->gridX, c->gridZ+1)) {
-    c->working = false;
+    c->finished = true;
     return;
   }
+
   c->vertexData.data.clear();
   for (int Axis = 0; Axis < 3; ++Axis) {
     const int Axis1 = (Axis + 1) % 3;
@@ -194,8 +203,8 @@ void Chunk::createMesh(Chunk* c) {
           const auto CurrentBlock = c->getBlock(ChunkItr[0], ChunkItr[1], ChunkItr[2]);
           const auto CompareBlock = c->getBlock(ChunkItr[0] + AxisMask[0], ChunkItr[1] + AxisMask[1] , ChunkItr[2] + AxisMask[2]);
 
-          const bool CurrentBlockOpaque = CurrentBlock != AIR;
-          const bool CompareBlockOpaque = CompareBlock != AIR;
+          const bool CurrentBlockOpaque = CurrentBlock != AIR && CurrentBlock != INVALID;
+          const bool CompareBlockOpaque = CompareBlock != AIR && CompareBlock != INVALID;
 
           if (CurrentBlockOpaque == CompareBlockOpaque) {
             Mask[N++] = FMask { INVALID, 0 };
@@ -272,7 +281,7 @@ void Chunk::createMesh(Chunk* c) {
 
   }
   c->reload = true;
-  c->working = false;
+  c->finished = false;
 }
 
 //
@@ -281,11 +290,9 @@ void Chunk::createMesh(Chunk* c) {
 
 void Chunk::generateAsync(Chunk* c) {
   if(c == nullptr) return;
-  if(c->working) return;
-  c->working = true;
-  if(c->worker.joinable())
-    c->worker.join();
-  c->worker = std::thread(generate, c);
+  if(c->worker != nullptr && c->finished == false) return;
+  c->resetThread();
+  c->worker = new std::thread(generate, c);
 }
 
 void Chunk::generate(Chunk* c) {
@@ -321,7 +328,7 @@ void Chunk::generate(Chunk* c) {
   }
 
   c->generated = true;
-  c->working = false;
+  c->finished = true;
 }
 
 //
@@ -334,8 +341,7 @@ xe::Model* Chunk::getMesh() {
       xe::Model::deleteModel(chunkMesh);
       chunkMesh = nullptr;
     }
-    if(worker.joinable())
-      worker.join();
+    resetThread();
     xe::Model::Builder builder{};
     builder.vertexData = vertexData;
     builder.vertexSize = 36;
@@ -347,7 +353,7 @@ xe::Model* Chunk::getMesh() {
 }
 
 uint8_t Chunk::getBlock(int32_t x, int32_t y, int32_t z) {
-  if(y > 256) return AIR;
+  if(y >= 256) return AIR;
   if(y < 0) return INVALID;
   int chunkX = gridX;
   int chunkZ = gridZ;
@@ -386,6 +392,20 @@ bool Chunk::isGenerated(int32_t gridX, int32_t gridZ) {
   Chunk* chunk = Chunk::getChunk(gridX, gridZ);
   if(chunk == nullptr) return false;
   return chunk->generated;
+}
+
+bool Chunk::isMeshed(int32_t gridX, int32_t gridZ) {
+  Chunk* chunk = Chunk::getChunk(gridX, gridZ);
+  if(chunk == nullptr) return false;
+  return chunk->chunkMesh != nullptr;
+}
+
+void Chunk::resetThread() {
+  if(worker != nullptr && worker->joinable()) {
+    worker->join();
+    finished = false;
+    delete worker;
+  }
 }
 
 }

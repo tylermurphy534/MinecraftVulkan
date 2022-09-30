@@ -26,6 +26,7 @@ void SimpleRenderer::render(std::vector<xe::GameObject> &gameObjects, xe::Camera
   xeRenderSystem->loadUniformObject(0, &ubo);
 
   for(auto &obj : gameObjects) {
+    if(obj.model == nullptr) continue;
     PushConstant pc{};
     pc.modelMatrix = obj.transform.mat4();
     pc.normalMatrix = obj.transform.normalMatrix();

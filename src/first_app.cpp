@@ -1,5 +1,8 @@
 #include "first_app.hpp"
 
+#include <chrono>
+using namespace std::chrono;
+
 namespace app {
 
 FirstApp::FirstApp() : xeEngine{WIDTH, HEIGHT, "Minecraft Vulkan", "res/image/icon.png"} {};
@@ -35,7 +38,7 @@ void FirstApp::run() {
       renderer.render(loadedChunks, xeEngine.getCamera());
       xeEngine.endFrame();
     }
-
+    
     reloadLoadedChunks(viewerObject);
 
   }
@@ -78,7 +81,7 @@ void FirstApp::reloadLoadedChunks(xe::GameObject& viewer) {
       Chunk* chunk = Chunk::getChunk(newGridX, newGridZ);
       if(chunk == nullptr) {
         chunk = Chunk::newChunk(newGridX, newGridZ, 12345);
-        Chunk::generate(chunk);
+        Chunk::generateAsync(chunk);
       }
       if(chunk->getMesh() == nullptr){
         Chunk::createMeshAsync(chunk);

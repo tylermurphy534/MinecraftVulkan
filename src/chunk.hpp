@@ -14,6 +14,7 @@
 #include <string>
 #include <map>
 #include <algorithm>
+#include <cstdlib>
 
 #define INVALID             -1
 #define AIR                 0
@@ -68,6 +69,7 @@ class Chunk {
     void setBlock(int32_t x, int32_t y, int32_t z, uint8_t block);
 
     static bool isGenerated(int32_t gridX, int32_t gridZ);
+    static bool isMeshed(int32_t gridX, int32_t gridZ);
 
     const int32_t gridX, gridZ;
     const uint32_t world_seed, chunk_seed;
@@ -77,14 +79,16 @@ class Chunk {
     Chunk(int32_t gridX, int32_t gridZ, uint32_t world_seed);
     ~Chunk();
 
-    bool generated{false};
-    bool reload{false};
-    bool working{false};
+    void resetThread();
+
+    bool generated;
+    bool reload;
+    bool finished;
 
     xe::Model* chunkMesh;
     xe::Model::Data vertexData;
     std::vector<uint8_t> cubes{};
-    std::thread worker;
+    std::thread* worker;
     
 };
 
