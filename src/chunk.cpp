@@ -35,11 +35,11 @@ Chunk* Chunk::newChunk(int32_t gridX, int32_t gridZ, uint32_t world_seed) {
 }
 
 Chunk* Chunk::getChunk(int32_t gridX, int32_t gridZ) {
-  if(chunks.count({gridX, gridZ})) {
-    return chunks[{gridX, gridZ}];
-  } else {
-    return nullptr;
+  auto it = chunks.find({gridX, gridZ});
+  if(it != chunks.end()) {
+    return it->second;
   }
+  return nullptr;
 }
 
 void Chunk::deleteChunk(int32_t gridX, int32_t gridZ) {
@@ -106,6 +106,57 @@ void Chunk::createMeshAsync(Chunk* c) {
   c->worker = std::thread(createMesh, c);
 }
 
+struct FMask {
+  int block;
+  int normal;
+};
+
+bool CompareMask(FMask a, FMask b){
+  if(a.block == INVALID || b.block == INVALID) return false;
+  return a.block == b.block && a.normal == b.normal;
+}
+
+void AddVertex(xe::Model::Data& data, glm::vec3 Pos, glm::vec3 Nor, FMask Mask, glm::vec3 AxisMask, float Uv[2]) {
+  data.write<float>(Pos[0]);
+  data.write<float>(Pos[1]);
+  data.write<float>(Pos[2]);
+  data.write<float>(Nor[0]);
+  data.write<float>(Nor[1]);
+  data.write<float>(Nor[2]);
+  data.write<float>(Uv[0]);
+  data.write<float>(Uv[1]);
+
+  int i = AxisMask[1]*2+AxisMask[2]*4+(Mask.normal<0?1:0);
+  data.write<uint32_t>(blocks[Mask.block].textures[i]);
+}
+
+void CreateQuad(xe::Model::Data& data, FMask Mask, glm::vec3 AxisMask, glm::vec3 V1, glm::vec3 V2, glm::vec3 V3, glm::vec3 V4, uint32_t width, uint32_t height) {
+  const auto Normal = glm::vec3(AxisMask) * glm::vec3(Mask.normal);
+  std::vector<glm::vec3> verticies = {V1, V2, V3, V4};
+
+  float uv[4][2];
+  
+  if (AxisMask[0] == 1) {
+    uv[0][0] = width; uv[0][1] = height;
+    uv[1][0] = 0; uv[1][1] = height;
+    uv[2][0] = width; uv[2][1] = 0;
+    uv[3][0] = 0; uv[3][1] = 0;
+  } else {
+    uv[0][0] = height; uv[0][1] = width;
+    uv[1][0] = height; uv[1][1] = 0;
+    uv[2][0] = 0; uv[2][1] = width;
+    uv[3][0] = 0; uv[3][1] = 0;
+  }
+
+  AddVertex(data, verticies[0], Normal, Mask, AxisMask, uv[0]);
+  AddVertex(data, verticies[2 + Mask.normal], Normal, Mask, AxisMask, uv[3]);
+  AddVertex(data, verticies[2 - Mask.normal], Normal, Mask, AxisMask, uv[2]);
+  AddVertex(data, verticies[3], Normal, Mask, AxisMask, uv[3]);
+  AddVertex(data, verticies[1 - Mask.normal], Normal, Mask, AxisMask, uv[0]);
+  AddVertex(data, verticies[1 + Mask.normal], Normal, Mask, AxisMask, uv[1]);
+
+}
+
 void Chunk::createMesh(Chunk* c) {
   if(c == nullptr) return;
   if(!isGenerated(c->gridX-1, c->gridZ) ||
@@ -116,48 +167,112 @@ void Chunk::createMesh(Chunk* c) {
     return;
   }
   c->vertexData.data.clear();
-  for(int32_t x=0;x<16;x++) {
-    for(int32_t y=0; y<256; y++) {
-      for(int32_t z=0; z<16; z++) {
-        uint8_t block = c->getBlock(x,y,z);
-        if(block == AIR) continue;
-        if(c->getBlock(x+1,y,z) == AIR) {
-          c->addVerticies(c, 0, x, y, z, block);
+  for (int Axis = 0; Axis < 3; ++Axis) {
+    const int Axis1 = (Axis + 1) % 3;
+    const int Axis2 = (Axis + 2) % 3;
+
+    const int MainAxisLimit = Axis == 1 ? 256 : 16; 
+    int Axis1Limit = Axis1 == 1 ? 256 : 16;
+    int Axis2Limit = Axis2 == 1 ? 256 : 16;
+
+    auto DeltaAxis1 = glm::vec3(0.f);
+    auto DeltaAxis2 = glm::vec3(0.f);
+
+    auto ChunkItr = glm::vec3(0.f);
+    auto AxisMask = glm::vec3(0.f);
+
+    AxisMask[Axis] = 1;
+
+    std::vector<FMask> Mask;
+    Mask.resize(Axis1Limit * Axis2Limit);
+
+    for (ChunkItr[Axis] = -1; ChunkItr[Axis] < MainAxisLimit;) {
+      int N = 0;
+      
+      for (ChunkItr[Axis2] = 0; ChunkItr[Axis2] < Axis2Limit; ++ChunkItr[Axis2]) {
+        for (ChunkItr[Axis1] = 0; ChunkItr[Axis1] < Axis1Limit; ++ChunkItr[Axis1]) {
+          const auto CurrentBlock = c->getBlock(ChunkItr[0], ChunkItr[1], ChunkItr[2]);
+          const auto CompareBlock = c->getBlock(ChunkItr[0] + AxisMask[0], ChunkItr[1] + AxisMask[1] , ChunkItr[2] + AxisMask[2]);
+
+          const bool CurrentBlockOpaque = CurrentBlock != AIR;
+          const bool CompareBlockOpaque = CompareBlock != AIR;
+
+          if (CurrentBlockOpaque == CompareBlockOpaque) {
+            Mask[N++] = FMask { INVALID, 0 };
+          } else  if (CurrentBlockOpaque) {
+            Mask[N++] = FMask { CurrentBlock, 1};
+          } else {
+            Mask[N++] = FMask { CompareBlock, -1};
+          }
         }
-        if(c->getBlock(x-1,y,z) == AIR) {
-          c->addVerticies(c, 1, x, y, z, block);
-        }
-        if(c->getBlock(x,y+1,z) == AIR) {
-          c->addVerticies(c, 2, x, y, z, block);
-        }
-        if(c->getBlock(x,y-1,z) == AIR) {
-          c->addVerticies(c, 3, x, y, z, block);
-        }
-        if(c->getBlock(x,y,z+1) == AIR) {
-          c->addVerticies(c, 4, x, y, z, block);
-        }
-        if(c->getBlock(x,y,z-1) == AIR) {
-          c->addVerticies(c, 5, x, y, z, block);
+      }
+
+      ++ChunkItr[Axis];
+      N = 0;
+
+      for (int j = 0; j < Axis2Limit; ++j) {
+        for (int i = 0; i < Axis1Limit;) {
+          if(Mask[N].normal != 0) {
+            const auto CurrentMask = Mask[N];
+            ChunkItr[Axis1] = i;
+            ChunkItr[Axis2] = j;
+
+            int width;
+
+            for(width = 1; i + width < Axis1Limit && CompareMask(Mask[N + width], CurrentMask); ++width) {}
+
+            int height;
+            bool done = false;
+
+            for (height = 1; j + height < Axis2Limit; ++height) {
+              for(int k = 0; k < width; ++k) {
+                if(CompareMask(Mask[N + k + height * Axis1Limit], CurrentMask)) continue;
+
+                done = true;
+                break;
+              }
+
+              if(done) break;
+            }
+
+            DeltaAxis1[Axis1] = width;
+            DeltaAxis2[Axis2] = height;
+
+            CreateQuad(c->vertexData, CurrentMask, AxisMask, 
+              ChunkItr,
+              ChunkItr + DeltaAxis1,
+              ChunkItr + DeltaAxis2,
+              ChunkItr + DeltaAxis1 + DeltaAxis2,
+              height,
+              width
+            );
+
+            DeltaAxis1 = glm::vec3(0.f);
+            DeltaAxis2 = glm::vec3(0.f);
+
+            for (int l = 0; l < height; ++l) {
+              for(int k = 0; k < width; ++k) {
+                Mask[N + k + l * Axis1Limit] = FMask { INVALID, 0 };
+              }
+            }
+
+            i += width;
+            N += width;
+
+          } else {
+
+            i++;
+            N++;
+
+          }
+
         }
       }
     }
+
   }
   c->reload = true;
   c->working = false;
-}
-
-void Chunk::addVerticies(Chunk* c, uint8_t side, int32_t x, int32_t y, int32_t z, uint8_t block) {
-  for(int i = 0; i < 6; i ++) {
-    c->vertexData.write<float>(px[side * 6 + i][0] + x);
-    c->vertexData.write<float>(px[side * 6 + i][1] + y);
-    c->vertexData.write<float>(px[side * 6 + i][2] + z);
-    c->vertexData.write<float>(nm[side][0]);
-    c->vertexData.write<float>(nm[side][1]);
-    c->vertexData.write<float>(nm[side][2]);
-    c->vertexData.write<float>(uv[i][0]);
-    c->vertexData.write<float>(uv[i][1]);
-    c->vertexData.write<uint32_t>(static_cast<uint32_t>(blocks[block].textures[side]));
-  }
 }
 
 //

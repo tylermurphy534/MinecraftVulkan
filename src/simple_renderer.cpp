@@ -13,7 +13,7 @@ SimpleRenderer::SimpleRenderer(xe::Engine &xeEngine, std::vector<xe::Image*> &im
     .addPushConstant(sizeof(PushConstant))
     .addUniformBinding(0, sizeof(UniformBuffer))
     .addTextureArrayBinding(1, images)
-    .setCulling(true)
+    .setCulling(false)
     .build();
 }
 

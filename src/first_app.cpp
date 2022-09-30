@@ -11,7 +11,7 @@ void FirstApp::run() {
   Chunk::load();
 
   auto viewerObject = xe::GameObject::createGameObject();
-  viewerObject.transform.translation = {0.f, 10.f, 0.f};
+  viewerObject.transform.translation = {0.f, 40.f, 0.f};
   viewerObject.transform.rotation.y = glm::radians(45.f);
 
   createGameObjects(viewerObject);
@@ -78,7 +78,7 @@ void FirstApp::reloadLoadedChunks(xe::GameObject& viewer) {
       Chunk* chunk = Chunk::getChunk(newGridX, newGridZ);
       if(chunk == nullptr) {
         chunk = Chunk::newChunk(newGridX, newGridZ, 12345);
-        Chunk::generateAsync(chunk);
+        Chunk::generate(chunk);
       }
       if(chunk->getMesh() == nullptr){
         Chunk::createMeshAsync(chunk);

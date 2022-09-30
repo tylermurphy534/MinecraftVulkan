@@ -77,81 +77,15 @@ class Chunk {
     Chunk(int32_t gridX, int32_t gridZ, uint32_t world_seed);
     ~Chunk();
 
-    static void addVerticies(Chunk* c, uint8_t side, int32_t x, int32_t y, int32_t z, uint8_t block);
-
     bool generated{false};
     bool reload{false};
     bool working{false};
 
     xe::Model* chunkMesh;
     xe::Model::Data vertexData;
-    std::vector<uint8_t> cubes;
+    std::vector<uint8_t> cubes{};
     std::thread worker;
     
-};
-
-const float px[36][3] = {
-  // POS X
-  {0.5f,0.5f,0.5f},
-  {0.5f,-0.5f,0.5f},
-  {0.5f,-0.5f,-0.5f},
-  {0.5f,-0.5f,-0.5f},
-  {0.5f,0.5f,-0.5f},
-  {0.5f,0.5f,0.5f},
-  // NEG X
-  {-0.5f,0.5f,-0.5f},
-  {-0.5f,-0.5f,-0.5f},
-  {-0.5f,-0.5f,0.5f},
-  {-0.5f,-0.5f,0.5f},
-  {-0.5f,0.5f,0.5f},
-  {-0.5f,0.5f,-0.5f},
-  // POS Y
-  {0.5f,0.5f,-0.5f},
-  {-0.5f,0.5f,-0.5f},
-  {-0.5f,0.5f,0.5f},
-  {-0.5f,0.5f,0.5f},
-  {0.5f,0.5f,0.5f},
-  {0.5f,0.5f,-0.5f},
-  // NEG Y
-  {-0.5f,-0.5f,0.5f},
-  {-0.5f,-0.5f,-0.5f},
-  {0.5f,-0.5f,-0.5f},
-  {0.5f,-0.5f,-0.5f},
-  {0.5f,-0.5f,0.5f},
-  {-0.5f,-0.5f,0.5f},
-  // POS Z
-  {-0.5f,0.5f,0.5f},
-  {-0.5f,-0.5f,0.5f},
-  {0.5f,-0.5f,0.5f},
-  {0.5f,-0.5f,0.5f},
-  {0.5f,0.5f,0.5f},
-  {-0.5f,0.5f,0.5f},
-  // NEG Z
-  {0.5f,0.5f,-0.5f},
-  {0.5f,-0.5f,-0.5f},
-  {-0.5f,-0.5f,-0.5f},
-  {-0.5f,-0.5f,-0.5f},
-  {-0.5f,0.5f,-0.5f},
-  {0.5f,0.5f,-0.5f}
-};
-
-const float nm[6][3] = {
-  {1.f,0.f,0.f},
-  {-1.f,0.f,0.f},
-  {0.f,1.f,0.f},
-  {0.f,-1.f,0.f},
-  {0.f,0.f,1.f},
-  {0.f,0.f,-1.f}
-};
-
-
-const float uv[6][2] = {
-  {1.f,0.f},
-  {1.f,1.f},
-  {0.f,1.f},
-  {0.f,1.f},
-  {0.f,0.f},
-  {1.f,0.f}
 };
 
 }
