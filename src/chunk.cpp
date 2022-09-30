@@ -132,28 +132,21 @@ void AddVertex(xe::Model::Data& data, glm::vec3 Pos, glm::vec3 Nor, FMask Mask, 
 
 void CreateQuad(xe::Model::Data& data, FMask Mask, glm::vec3 AxisMask, glm::vec3 V1, glm::vec3 V2, glm::vec3 V3, glm::vec3 V4, uint32_t width, uint32_t height) {
   const auto Normal = glm::vec3(AxisMask) * glm::vec3(Mask.normal);
-  std::vector<glm::vec3> verticies = {V1, V2, V3, V4};
+  std::vector<glm::vec3> verticies = {V4, V2, V3, V1};
 
   float uv[4][2];
   
-  if (AxisMask[0] == 1) {
-    uv[0][0] = width; uv[0][1] = height;
-    uv[1][0] = 0; uv[1][1] = height;
-    uv[2][0] = width; uv[2][1] = 0;
-    uv[3][0] = 0; uv[3][1] = 0;
-  } else {
-    uv[0][0] = height; uv[0][1] = width;
+  uv[0][0] = height; uv[0][1] = width;
     uv[1][0] = height; uv[1][1] = 0;
     uv[2][0] = 0; uv[2][1] = width;
     uv[3][0] = 0; uv[3][1] = 0;
-  }
 
-  AddVertex(data, verticies[0], Normal, Mask, AxisMask, uv[0]);
-  AddVertex(data, verticies[2 + Mask.normal], Normal, Mask, AxisMask, uv[3]);
-  AddVertex(data, verticies[2 - Mask.normal], Normal, Mask, AxisMask, uv[2]);
-  AddVertex(data, verticies[3], Normal, Mask, AxisMask, uv[3]);
-  AddVertex(data, verticies[1 - Mask.normal], Normal, Mask, AxisMask, uv[0]);
-  AddVertex(data, verticies[1 + Mask.normal], Normal, Mask, AxisMask, uv[1]);
+    AddVertex(data, verticies[0], Normal, Mask, AxisMask, uv[1]);
+    AddVertex(data, verticies[2 + Mask.normal], Normal, Mask, AxisMask, uv[2]);
+    AddVertex(data, verticies[2 - Mask.normal], Normal, Mask, AxisMask, uv[0]);
+    AddVertex(data, verticies[3], Normal, Mask, AxisMask, uv[2]);
+    AddVertex(data, verticies[1 - Mask.normal], Normal, Mask, AxisMask, uv[1]);
+    AddVertex(data, verticies[1 + Mask.normal], Normal, Mask, AxisMask, uv[3]);
 
 }
 
