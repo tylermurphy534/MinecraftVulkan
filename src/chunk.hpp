@@ -38,8 +38,6 @@
 #define SHRUB_TEXTURE       "res/image/shrub.png"
 #define SHRUB_TOP_TEXTURE   "res/image/shrub_top.png"
 
-static constexpr int WATER_LEVEL = 20;
-
 namespace app {
 
 struct Block {
@@ -49,6 +47,9 @@ struct Block {
 class Chunk {
 
   public:
+
+    static constexpr int WATER_LEVEL = 20;
+    static constexpr glm::ivec3 CHUNK_SIZE{32, 256, 32};
 
     static void load();
     static void unload();

@@ -62,8 +62,8 @@ void FirstApp::createGameObjects(xe::GameObject& viewer) {
 }
 
 void FirstApp::reloadLoadedChunks(xe::GameObject& viewer) {
-  viewX = static_cast<int>(floor(viewer.transform.translation.x / 16.f));
-  viewZ = static_cast<int>(floor(viewer.transform.translation.z / 16.f));
+  viewX = static_cast<int>(floor(viewer.transform.translation.x / Chunk::CHUNK_SIZE.x));
+  viewZ = static_cast<int>(floor(viewer.transform.translation.z / Chunk::CHUNK_SIZE.z));
   int width = 2*RENDER_DISTANCE+1;
   int minX = viewX - RENDER_DISTANCE;
   int minZ = viewZ - RENDER_DISTANCE;
@@ -72,8 +72,8 @@ void FirstApp::reloadLoadedChunks(xe::GameObject& viewer) {
   for(int32_t x = 0; x < width; x++) {
     for(int32_t z = 0; z < width; z++) {
       auto& gameObject = loadedChunks[x + z * width];
-      int gridX = static_cast<int>(floor(gameObject.transform.translation.x / 16.f));
-      int gridZ = static_cast<int>(floor(gameObject.transform.translation.z / 16.f));
+      int gridX = static_cast<int>(floor(gameObject.transform.translation.x / Chunk::CHUNK_SIZE.x));
+      int gridZ = static_cast<int>(floor(gameObject.transform.translation.z / Chunk::CHUNK_SIZE.z));
       int newGridX = minX + x;
       int newGridZ = minZ + z;
       if(gridX < minX || gridZ < minZ || gridX > maxX || gridZ > maxZ)
@@ -87,7 +87,7 @@ void FirstApp::reloadLoadedChunks(xe::GameObject& viewer) {
         Chunk::createMeshAsync(chunk);
       }
       gameObject.model = chunk->getMesh();
-      gameObject.transform.translation = glm::vec3(newGridX * 16.f, 0, newGridZ * 16.f);
+      gameObject.transform.translation = glm::vec3(newGridX * Chunk::CHUNK_SIZE.x, 0, newGridZ * Chunk::CHUNK_SIZE.z);
     }
   }
 }

@@ -180,9 +180,9 @@ void Chunk::createMesh(Chunk* c) {
     const int Axis1 = (Axis + 1) % 3;
     const int Axis2 = (Axis + 2) % 3;
 
-    const int MainAxisLimit = Axis == 1 ? 256 : 16; 
-    int Axis1Limit = Axis1 == 1 ? 256 : 16;
-    int Axis2Limit = Axis2 == 1 ? 256 : 16;
+    const int MainAxisLimit = CHUNK_SIZE[Axis]; 
+    const int Axis1Limit = CHUNK_SIZE[Axis1];
+    const int Axis2Limit = CHUNK_SIZE[Axis2];
 
     auto DeltaAxis1 = glm::vec3(0.f);
     auto DeltaAxis2 = glm::vec3(0.f);
@@ -296,15 +296,15 @@ void Chunk::generateAsync(Chunk* c) {
 }
 
 void Chunk::generate(Chunk* c) {
-  c->cubes.resize(16*16*256);
+  c->cubes.resize(CHUNK_SIZE.x*CHUNK_SIZE.y*CHUNK_SIZE.z);
   
   const PerlinNoise perlin{c->world_seed};
 
-  for(int x = 0; x < 16; x++) {
-    for(int z = 0; z < 16; z++) {
+  for(int x = 0; x < CHUNK_SIZE.x; x++) {
+    for(int z = 0; z < CHUNK_SIZE.z; z++) {
       double biome = perlin.octave2D_01((( x + c->gridX * 13) * 0.0005), ((z + c->gridZ * 13) * 0.0005), 4) * 2;
-      double continent = perlin.octave2D_01((( x + c->gridX * 16) * 0.001), ((z + c->gridZ * 16) * 0.001), 4) * 10 - 5;
-      double noise = perlin.octave2D_01((( x + c->gridX * 16) * 0.01), ((z + c->gridZ * 16) * 0.01), 4);
+      double continent = perlin.octave2D_01((( x + c->gridX * CHUNK_SIZE.x) * 0.001), ((z + c->gridZ * CHUNK_SIZE.z) * 0.001), 4) * 10 - 5;
+      double noise = perlin.octave2D_01((( x + c->gridX * CHUNK_SIZE.x) * 0.01), ((z + c->gridZ * CHUNK_SIZE.z) * 0.01), 4);
       int height = noise * 40 + continent;
       for(int y = 0; y < std::max(height, WATER_LEVEL); y++) {
         int difference = y - WATER_LEVEL;
@@ -353,38 +353,41 @@ xe::Model* Chunk::getMesh() {
 }
 
 uint8_t Chunk::getBlock(int32_t x, int32_t y, int32_t z) {
-  if(y >= 256) return AIR;
+  if(y >= CHUNK_SIZE.y) return AIR;
   if(y < 0) return INVALID;
   int chunkX = gridX;
   int chunkZ = gridZ;
   if(x < 0) {
     chunkX--;
-  } else if(x > 15) {
+  } else if(x > CHUNK_SIZE.x-1) {
     chunkX++;
   }
   if(z < 0) {
     chunkZ--;
-  } else if(z > 15) {
+  } else if(z > CHUNK_SIZE.z-1) {
     chunkZ++;
   }
-  x = (x+16)%16;
-  z = (z+16)%16;
+  x = (x+CHUNK_SIZE.x)%CHUNK_SIZE.x;
+  z = (z+CHUNK_SIZE.z)%CHUNK_SIZE.z;
   if(chunkX == gridX && chunkZ == gridZ) {
-    int index = x + (z * 16) + (y * 256);
+    int index = x + (y * CHUNK_SIZE.x) + (z * CHUNK_SIZE.x * CHUNK_SIZE.y);
     return cubes[index];
   } else {
     Chunk* chunk = getChunk(chunkX, chunkZ);
     if(chunk == NULL) {
       return INVALID;
     } else {
-      int index = x + (z * 16) + (y * 256);
+       int index = x + (y * CHUNK_SIZE.x) + (z * CHUNK_SIZE.x * CHUNK_SIZE.y);
       return chunk->cubes[index];
     }
   }
 }
 
 void Chunk::setBlock(int32_t x, int32_t y, int32_t z, uint8_t block) {
-  int index = x + (z * 16) + (y * 256);
+  if(x < 0 || x >= CHUNK_SIZE.x) return;
+  if(y < 0 || y >= CHUNK_SIZE.y) return;
+  if(z < 0 || z >= CHUNK_SIZE.z) return;
+  int index = x + (y * CHUNK_SIZE.x) + (z * CHUNK_SIZE.x * CHUNK_SIZE.y);
   cubes[index] = block;
 }
 
