@@ -16,16 +16,16 @@ struct PushConstant {
   alignas(16) glm::mat4 normalMatrix{1.f};
 };
 
-class SimpleRenderer {
+class ChunkRenderer {
 
   public:
 
-    SimpleRenderer(xe::Engine &xeEngine, std::vector<xe::Image*> &images);
+    ChunkRenderer(std::vector<xe::Image*> &images);
 
-    ~SimpleRenderer() {};
+    ~ChunkRenderer() {};
 
-    SimpleRenderer(const SimpleRenderer&) = delete;
-    SimpleRenderer operator=(const SimpleRenderer&) = delete;
+    ChunkRenderer(const ChunkRenderer&) = delete;
+    ChunkRenderer operator=(const ChunkRenderer&) = delete;
 
     void render(std::vector<xe::GameObject> &gameObjects, xe::Camera &xeCamera);
 

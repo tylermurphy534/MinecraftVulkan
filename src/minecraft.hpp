@@ -2,8 +2,8 @@
 
 #include "xe_engine.hpp"
 
-#include "keyboard_movement_controller.hpp"
-#include "simple_renderer.hpp"
+#include "player_controller.hpp"
+#include "chunk_renderer.hpp"
 #include "chunk.hpp"
 
 #define GLM_FORCE_RADIANS
@@ -17,14 +17,14 @@
 #include <iostream>
 
 namespace app {
-class FirstApp {
+class Minecraft {
   public:
 
-    FirstApp();
-    ~FirstApp();
+    Minecraft();
+    ~Minecraft();
 
-    FirstApp(const FirstApp &) = delete;
-    FirstApp operator=(const FirstApp &) = delete;
+    Minecraft(const Minecraft &) = delete;
+    Minecraft operator=(const Minecraft &) = delete;
 
     void run();
 

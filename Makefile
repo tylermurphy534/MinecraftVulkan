@@ -19,10 +19,10 @@ LDFLAGS += -lalut
 LDFLAGS += -lvulkan
 LDFLAGS += $(INCFLAGS)
 
+BIN  = bin
 SRC  = $(shell find src -name "*.cpp")
 SRC += $(shell find engine -name "*.cpp")
-OBJ  = $(SRC:.cpp=.o)
-BIN  = bin
+OBJ  = $(SRC:%.cpp=$(BIN)/%.o)
 
 VERTSRC = $(shell find ./res/shaders -type f -name "*.vert")
 VERTOBJ = $(patsubst %.vert, %.vert.spv, $(VERTSRC))
@@ -35,7 +35,8 @@ all: dirs shader build
 
 dirs:
 	mkdir -p ./$(BIN)
-
+	mkdir -p ./$(BIN)/src
+	mkdir -p ./$(BIN)/engine
 
 shader: $(VERTOBJ) $(FRAGOBJ)
 
@@ -48,11 +49,10 @@ build: dirs shader ${OBJ}
 %.spv: %
 	glslc -o $@ $<
 
-%.o: %.cpp
+$(BIN)/%.o: %.cpp
 	$(CC) -o $@ -c $< $(CCFLAGS)
 
 clean:
 	rm -rf app
-	rm -rf $(BIN) $(OBJ)
+	rm -rf $(BIN)
 	rm -rf res/shaders/*.spv
-	rm -rf lib/glfw/CMakeCache.txt

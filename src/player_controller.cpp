@@ -1,13 +1,13 @@
-#include "keyboard_movement_controller.hpp"
+#include "player_controller.hpp"
 
 namespace app {
 
-KeyboardMovementController::KeyboardMovementController(xe::Input &input, xe::GameObject &viewerObject)
+PlayerController::PlayerController(xe::Input &input, xe::GameObject &viewerObject)
   : input{input}, viewerObject{viewerObject} {};
 
-KeyboardMovementController::~KeyboardMovementController() {};
+PlayerController::~PlayerController() {};
 
-void KeyboardMovementController::update(float dt) {
+void PlayerController::update(float dt) {
   glm::vec3 rotate{0};
   if(input.isKeyPressed(keys.lookRight)) rotate.y += 1.f;
   if(input.isKeyPressed(keys.lookLeft)) rotate.y -= 1.f;

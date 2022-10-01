@@ -4,7 +4,7 @@
 #include "xe_engine.hpp"
 #include "xe_image.hpp"
 
-#include "PerlinNoise.hpp"
+#include "chunk_noise.hpp"
 
 #include <glm/common.hpp>
 #include <glm/fwd.hpp>

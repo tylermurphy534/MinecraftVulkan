@@ -10,12 +10,12 @@
 
 namespace app {
 
-  class KeyboardMovementController {
+  class PlayerController {
 
     public:
 
-      KeyboardMovementController(xe::Input &input, xe::GameObject &viewerObject);
-      ~KeyboardMovementController();
+      PlayerController(xe::Input &input, xe::GameObject &viewerObject);
+      ~PlayerController();
 
       struct KeyMappings {
         int moveLeft = KEY_A;

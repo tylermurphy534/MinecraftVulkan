@@ -1,10 +1,10 @@
-#include "simple_renderer.hpp"
+#include "chunk_renderer.hpp"
 #include "chunk.hpp"
 
 namespace app {
 
-SimpleRenderer::SimpleRenderer(xe::Engine &xeEngine, std::vector<xe::Image*> &images) {
-  xeRenderSystem = xe::RenderSystem::Builder(xeEngine, "res/shaders/simple_shader.vert.spv", "res/shaders/simple_shader.frag.spv")
+ChunkRenderer::ChunkRenderer(std::vector<xe::Image*> &images) {
+  xeRenderSystem = xe::RenderSystem::Builder("res/shaders/simple_shader.vert.spv", "res/shaders/simple_shader.frag.spv")
     .addVertexBindingf(0, 3, 0) // position
     .addVertexBindingf(1, 3, 12) // normal
     .addVertexBindingf(2, 2, 24) // uvs
@@ -17,7 +17,7 @@ SimpleRenderer::SimpleRenderer(xe::Engine &xeEngine, std::vector<xe::Image*> &im
     .build();
 }
 
-void SimpleRenderer::render(std::vector<xe::GameObject> &gameObjects, xe::Camera &xeCamera) {
+void ChunkRenderer::render(std::vector<xe::GameObject> &gameObjects, xe::Camera &xeCamera) {
 
   xeRenderSystem->start();
 

@@ -1,15 +1,15 @@
-#include "first_app.hpp"
+#include "minecraft.hpp"
 
 #include <chrono>
 using namespace std::chrono;
 
 namespace app {
 
-FirstApp::FirstApp() : xeEngine{WIDTH, HEIGHT, "Minecraft Vulkan", "res/image/icon.png"} {};
+Minecraft::Minecraft() : xeEngine{WIDTH, HEIGHT, "Minecraft Vulkan", "res/image/icon.png"} {};
 
-FirstApp::~FirstApp() {}
+Minecraft::~Minecraft() {}
 
-void FirstApp::run() {
+void Minecraft::run() {
 
   Chunk::load();
 
@@ -19,13 +19,13 @@ void FirstApp::run() {
 
   createGameObjects(viewerObject);
 
-  SimpleRenderer renderer{xeEngine, Chunk::getTextures()};
+  ChunkRenderer renderer{Chunk::getTextures()};
 
   xe::Sound sound{"res/sound/when_the_world_ends.wav"};
   sound.setLooping(true);
   sound.play();
     
-  KeyboardMovementController cameraController{xeEngine.getInput(), viewerObject};
+  PlayerController cameraController{xeEngine.getInput(), viewerObject};
 
   while (xeEngine.poll()) {
 
@@ -49,7 +49,7 @@ void FirstApp::run() {
 
 }
 
-void FirstApp::createGameObjects(xe::GameObject& viewer) {
+void Minecraft::createGameObjects(xe::GameObject& viewer) {
   int width = 2*RENDER_DISTANCE+1;
   loadedChunks.clear();
   for(int32_t x = 0; x < width; x++) {
@@ -61,7 +61,7 @@ void FirstApp::createGameObjects(xe::GameObject& viewer) {
   }
 }
 
-void FirstApp::reloadLoadedChunks(xe::GameObject& viewer) {
+void Minecraft::reloadLoadedChunks(xe::GameObject& viewer) {
   viewX = static_cast<int>(floor(viewer.transform.translation.x / Chunk::CHUNK_SIZE.x));
   viewZ = static_cast<int>(floor(viewer.transform.translation.z / Chunk::CHUNK_SIZE.z));
   int width = 2*RENDER_DISTANCE+1;

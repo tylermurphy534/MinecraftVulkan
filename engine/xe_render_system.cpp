@@ -3,7 +3,6 @@
 namespace xe {
 
 RenderSystem::RenderSystem(
-  Engine &xeEngine,
   std::string vert,
   std::string frag,
   std::map<uint32_t, uint32_t> uniformBindings,
@@ -13,8 +12,8 @@ RenderSystem::RenderSystem(
   bool cullingEnabled,
   std::vector<VkVertexInputAttributeDescription> attributeDescptions,
   uint32_t vertexSize
-) : xeDevice{xeEngine.xeDevice}, 
-    xeRenderer{xeEngine.xeRenderer},
+) : xeDevice{Engine::getInstance()->xeDevice}, 
+    xeRenderer{Engine::getInstance()->xeRenderer},
     pushCunstantDataSize{pushCunstantDataSize},
     uniformBindings{uniformBindings},
     imageBindings{imageBindings},

@@ -1,11 +1,11 @@
-#include "first_app.hpp"
+#include "minecraft.hpp"
 
 #include <cstdlib>
 #include <iostream>
 #include <stdexcept>
 
 int main() {
-    app::FirstApp app{};
+    app::Minecraft app{};
 
     try {
         app.run();

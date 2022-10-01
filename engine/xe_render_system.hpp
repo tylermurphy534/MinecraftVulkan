@@ -22,7 +22,7 @@ class RenderSystem {
   
     class Builder {
       public:
-        Builder(Engine &xeEngine, std::string vert, std::string frag) : xeEngine{xeEngine}, vert{vert}, frag{frag} {}
+        Builder(std::string vert, std::string frag) : vert{vert}, frag{frag} {}
 
         Builder& addVertexBindingf(uint32_t binding, uint32_t dimension, uint32_t offset){
           if(dimension == 1)
@@ -75,7 +75,7 @@ class RenderSystem {
         }
 
         std::unique_ptr<RenderSystem> build() {
-          return std::make_unique<RenderSystem>(xeEngine, std::move(vert), std::move(frag), std::move(uniformBindings), std::move(imageBindings), std::move(imageArrayBindings), std::move(pushCunstantDataSize), std::move(cullingEnabled), std::move(attributeDescptions), std::move(vertexSize));
+          return std::make_unique<RenderSystem>(std::move(vert), std::move(frag), std::move(uniformBindings), std::move(imageBindings), std::move(imageArrayBindings), std::move(pushCunstantDataSize), std::move(cullingEnabled), std::move(attributeDescptions), std::move(vertexSize));
         }
 
       private:
@@ -92,12 +92,9 @@ class RenderSystem {
         std::string frag;
 
         bool cullingEnabled{false};
-
-        Engine &xeEngine;
     };
 
     RenderSystem(
-      Engine &xeEngine,
       std::string vert,
       std::string frag,
       std::map<uint32_t, uint32_t> uniformBindings,
