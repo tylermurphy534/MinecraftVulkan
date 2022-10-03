@@ -1,8 +1,13 @@
 #pragma once
 
 #include "xe_game_object.hpp"
-#include "chunk_renderer.hpp"
+#include "skinned_renderer.hpp"
 #include "chunk.hpp"
+
+#define GLM_FORCE_RADIANS
+#include <glm/common.hpp>
+#include <glm/fwd.hpp>
+#include <glm/geometric.hpp>
 
 #include <vector>
 
@@ -12,6 +17,11 @@ class World {
 
   public:
 
+    struct Ray {
+      glm::ivec3 pos;
+      int hit;
+    };
+
     World(xe::GameObject& viewer, int renderDistance, int worldSeed);
     ~World();
 
@@ -19,6 +29,8 @@ class World {
     void reloadChunks(int newRenderDistance);
     
     void render(xe::Camera& camera);
+
+    Ray raycast(float distance, int steps);
 
   private:
 
@@ -36,7 +48,7 @@ class World {
     const xe::GameObject& viewer;
     std::vector<xe::GameObject> loadedChunks;
 
-    ChunkRenderer chunkRenderer;
+    SkinnedRenderer skinnedRenderer;
 
 };
 

@@ -6,7 +6,7 @@ World::World(xe::GameObject& viewer, int renderDistance, int worldSeed)
   : viewer{viewer}, 
     renderDistance{renderDistance},
     worldSeed{worldSeed},
-    chunkRenderer{Chunk::getTextures()} {
+    skinnedRenderer{Chunk::getTextures()} {
   reloadChunks(renderDistance);
 }
 
@@ -92,7 +92,26 @@ void World::updateChunkMeshs() {
 
 void World::render(xe::Camera& camera) {
   camera.setViewYXZ(viewer.transform.translation, viewer.transform.rotation);
-  chunkRenderer.render(loadedChunks, camera);
+  // World::Ray ray = raycast(7, 100);
+  skinnedRenderer.render(loadedChunks, camera);
+}
+
+World::Ray World::raycast(float distance, int steps) {
+
+  glm::vec3 position = glm::vec3(viewer.transform.translation);
+
+  float pitch = viewer.transform.rotation.x;
+  float yaw = viewer.transform.rotation.y;
+  float clamp = 1-fabs(sin(-pitch));
+  const glm::vec3 step = glm::normalize(glm::vec3(sin(yaw)*clamp, sin(-pitch), cos(yaw)*clamp)) * (distance/steps);
+
+  for(int i = 0; i < steps; i++) {
+    position += step;
+    int hit = Chunk::getGlobalBlock(position.x, position.y, position.z);
+    if(hit == AIR) continue;
+    return World::Ray{position, hit};
+  }
+  return World::Ray{position, INVALID};
 }
 
 }

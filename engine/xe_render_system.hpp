@@ -74,8 +74,24 @@ class RenderSystem {
           return *this;
         }
 
+        Builder& setWireframe(bool enabled) {
+          wireframeEnabled = enabled;
+          return *this;
+        }
+
         std::unique_ptr<RenderSystem> build() {
-          return std::make_unique<RenderSystem>(std::move(vert), std::move(frag), std::move(uniformBindings), std::move(imageBindings), std::move(imageArrayBindings), std::move(pushCunstantDataSize), std::move(cullingEnabled), std::move(attributeDescptions), std::move(vertexSize));
+          return std::make_unique<RenderSystem>(
+            std::move(vert), 
+            std::move(frag), 
+            std::move(uniformBindings), 
+            std::move(imageBindings), 
+            std::move(imageArrayBindings), 
+            std::move(pushCunstantDataSize), 
+            std::move(cullingEnabled), 
+            std::move(wireframeEnabled), 
+            std::move(attributeDescptions), 
+            std::move(vertexSize)
+          );
         }
 
       private:
@@ -92,6 +108,7 @@ class RenderSystem {
         std::string frag;
 
         bool cullingEnabled{false};
+        bool wireframeEnabled{false};
     };
 
     RenderSystem(
@@ -102,6 +119,7 @@ class RenderSystem {
       std::map<uint32_t, std::vector<Image*>> imageArrayBindings,
       uint32_t pushCunstantDataSize,
       bool cullingEnabled,
+      bool wireframeEnabled,
       std::vector<VkVertexInputAttributeDescription> attributeDescptions,
       uint32_t vertexSize
     );
@@ -127,7 +145,7 @@ class RenderSystem {
     void createDescriptorSets();
     void updateDescriptorSet(int frameIndex, bool allocate);
     void createPipelineLayout();
-    void createPipeline(VkRenderPass renderPass, std::string vert, std::string frag, bool cullingEnabled, std::vector<VkVertexInputAttributeDescription> attributeDescptions, uint32_t vertexSize);
+    void createPipeline(VkRenderPass renderPass, std::string vert, std::string frag, bool cullingEnabled, bool wireframeEnabled, std::vector<VkVertexInputAttributeDescription> attributeDescptions, uint32_t vertexSize);
 
     bool boundPipeline{false};
     bool boundDescriptor{false};

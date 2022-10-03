@@ -24,7 +24,7 @@ void PlayerController::update(float dt) {
   float yaw = viewerObject.transform.rotation.y;
   const glm::vec3 forwardDir{sin(yaw), 0.f, cos(yaw)};
   const glm::vec3 rightDir{forwardDir.z, 0.f, -forwardDir.x};
-  const glm::vec3 upDir{0.f, 01.f, 0.f};
+  const glm::vec3 upDir{0.f, 1.f, 0.f};
 
   glm::vec3 moveDir{0};
   if(input.isKeyPressed(keys.moveForward)) moveDir += forwardDir;

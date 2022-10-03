@@ -68,6 +68,8 @@ class Chunk {
     xe::Model* getMesh();
     uint8_t getBlock(int32_t x, int32_t y, int32_t z);
     void setBlock(int32_t x, int32_t y, int32_t z, uint8_t block);
+    static uint8_t getGlobalBlock(int32_t x, int32_t y, int32_t z);
+    static void setGlobalBlock(int32_t x, int32_t y, int32_t z, uint8_t block);
 
     static bool isGenerated(int32_t gridX, int32_t gridZ);
     static bool isMeshed(int32_t gridX, int32_t gridZ);

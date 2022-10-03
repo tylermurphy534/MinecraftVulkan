@@ -10,6 +10,7 @@ RenderSystem::RenderSystem(
   std::map<uint32_t, std::vector<Image*>> imageArrayBindings,
   uint32_t pushCunstantDataSize,
   bool cullingEnabled,
+  bool wireframeEnabled,
   std::vector<VkVertexInputAttributeDescription> attributeDescptions,
   uint32_t vertexSize
 ) : xeDevice{Engine::getInstance()->xeDevice}, 
@@ -23,7 +24,7 @@ RenderSystem::RenderSystem(
   createUniformBuffers();
   createDescriptorSets();
   createPipelineLayout();
-  createPipeline(xeRenderer.getSwapChainRenderPass(), vert, frag, cullingEnabled, attributeDescptions, vertexSize);
+  createPipeline(xeRenderer.getSwapChainRenderPass(), vert, frag, cullingEnabled, wireframeEnabled, attributeDescptions, vertexSize);
 }
 
 RenderSystem::~RenderSystem() {
@@ -155,13 +156,16 @@ void RenderSystem::createPipelineLayout() {
 }
 
 
-void RenderSystem::createPipeline(VkRenderPass renderPass, std::string vert, std::string frag, bool cullingEnabled, std::vector<VkVertexInputAttributeDescription> attributeDescptions, uint32_t vertexSize) {
+void RenderSystem::createPipeline(VkRenderPass renderPass, std::string vert, std::string frag, bool cullingEnabled, bool wireframeEnabled, std::vector<VkVertexInputAttributeDescription> attributeDescptions, uint32_t vertexSize) {
   assert(pipelineLayout != nullptr && "Cannot create pipeline before pipeline layout");
 
   PipelineConfigInfo pipelineConfig{};
   Pipeline::defaultPipelineConfigInfo(pipelineConfig, xeDevice);
   if (cullingEnabled) {
     pipelineConfig.rasterizationInfo.cullMode = VK_CULL_MODE_BACK_BIT;
+  }
+  if(wireframeEnabled) {
+    pipelineConfig.rasterizationInfo.polygonMode = VK_POLYGON_MODE_LINE;
   }
   pipelineConfig.renderPass = renderPass;
   pipelineConfig.pipelineLayout = pipelineLayout;

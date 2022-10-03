@@ -22,8 +22,8 @@ layout (push_constant) uniform Push {
 const float AMBIENT = 0.02;
 
 void main() {
-  gl_Position = ubo.projectionViewMatrix * push.modelMatrix * vec4(position, 1.0);
 
+  gl_Position = ubo.projectionViewMatrix * push.modelMatrix * vec4(position, 1.0);
   vec3 normalWorldSpace = normalize(mat3(push.normalMatrix) * normal);
 
   float lightIntensity = AMBIENT + max(dot(normalWorldSpace, ubo.directionToLight), 0);

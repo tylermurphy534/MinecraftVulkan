@@ -391,6 +391,29 @@ void Chunk::setBlock(int32_t x, int32_t y, int32_t z, uint8_t block) {
   cubes[index] = block;
 }
 
+uint8_t Chunk::getGlobalBlock(int32_t x, int32_t y, int32_t z) {
+  if(y >= CHUNK_SIZE.y) return AIR;
+  if(y < 0) return INVALID;
+  int gridX = static_cast<int>(floor(x / Chunk::CHUNK_SIZE.x));
+  int gridZ = static_cast<int>(floor(z / Chunk::CHUNK_SIZE.z));
+  Chunk* chunk = getChunk(gridX, gridZ);
+  if(chunk == nullptr) return INVALID;
+  int localX = x - gridX * CHUNK_SIZE.x;
+  int localZ = z - gridZ * CHUNK_SIZE.z;
+  return chunk->getBlock(localX, y, localZ);
+}
+
+void Chunk::setGlobalBlock(int32_t x, int32_t y, int32_t z, uint8_t block) {
+  if(y < 0 || y >= CHUNK_SIZE.y) return;
+  int gridX = static_cast<int>(x % Chunk::CHUNK_SIZE.x);
+  int gridZ = static_cast<int>(floor(z / Chunk::CHUNK_SIZE.z));
+  Chunk* chunk = getChunk(gridX, gridZ);
+  if(chunk == nullptr) return;
+  int localX = x - gridX * CHUNK_SIZE.x;
+  int localZ = z - gridZ * CHUNK_SIZE.z;
+  chunk->setBlock(localX, y, localZ, block);
+}
+
 bool Chunk::isGenerated(int32_t gridX, int32_t gridZ) {
   Chunk* chunk = Chunk::getChunk(gridX, gridZ);
   if(chunk == nullptr) return false;

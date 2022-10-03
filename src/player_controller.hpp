@@ -3,6 +3,7 @@
 #include "xe_game_object.hpp"
 #include "xe_input.hpp"
 
+#define GLM_FORCE_RADIANS
 #include <glm/common.hpp>
 #include <glm/fwd.hpp>
 #include <glm/geometric.hpp>
@@ -36,7 +37,7 @@ namespace app {
       xe::GameObject &viewerObject;
 
       KeyMappings keys{};
-      float moveSpeed{250.f};
+      float moveSpeed{100.f};
       float lookSpeed{1.5f};
 
   };

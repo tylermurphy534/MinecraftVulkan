@@ -1,9 +1,9 @@
-#include "chunk_renderer.hpp"
+#include "skinned_renderer.hpp"
 #include "chunk.hpp"
 
 namespace app {
 
-ChunkRenderer::ChunkRenderer(std::vector<xe::Image*> &images) {
+SkinnedRenderer::SkinnedRenderer(std::vector<xe::Image*> &images) {
   xeRenderSystem = xe::RenderSystem::Builder("res/shaders/simple_shader.vert.spv", "res/shaders/simple_shader.frag.spv")
     .addVertexBindingf(0, 3, 0) // position
     .addVertexBindingf(1, 3, 12) // normal
@@ -14,10 +14,11 @@ ChunkRenderer::ChunkRenderer(std::vector<xe::Image*> &images) {
     .addUniformBinding(0, sizeof(UniformBuffer))
     .addTextureArrayBinding(1, images)
     .setCulling(true)
+    .setWireframe(false)
     .build();
 }
 
-void ChunkRenderer::render(std::vector<xe::GameObject> &gameObjects, xe::Camera &xeCamera) {
+void SkinnedRenderer::render(std::vector<xe::GameObject> &gameObjects, xe::Camera &xeCamera) {
 
   xeRenderSystem->start();
 
